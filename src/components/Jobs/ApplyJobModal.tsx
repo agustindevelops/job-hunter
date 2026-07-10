@@ -5,9 +5,10 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Button from "@/components/Button";
 import Modal from "@/components/Modal";
-import { createJobFromApply } from "@/db/jobs";
+import { createJobFromApply } from "@/api/job";
 import { fieldClassName, labelClassName } from "@/lib/formStyles";
 import { jobPath } from "@/lib/site";
+import { useAiConfig } from "@/context/AiConfigContext";
 
 type ApplyJobModalProps = {
   open: boolean;
@@ -21,6 +22,7 @@ type ApplyJobFormValues = {
 
 export default function ApplyJobModal({ open, onClose }: ApplyJobModalProps) {
   const router = useRouter();
+  const { config } = useAiConfig();
   const [saving, setSaving] = useState(false);
   const { register, handleSubmit, reset } = useForm<ApplyJobFormValues>({
     defaultValues: { url: "", dataDump: "" },
@@ -32,6 +34,7 @@ export default function ApplyJobModal({ open, onClose }: ApplyJobModalProps) {
       const id = await createJobFromApply({
         link: values.url,
         dataDump: values.dataDump,
+        aiConfig: config,
       });
       reset();
       onClose();

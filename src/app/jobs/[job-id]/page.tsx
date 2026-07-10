@@ -5,7 +5,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import Link from "next/link";
 import AppHeader from "@/components/AppHeader";
 import Button from "@/components/Button";
-import { db } from "@/db";
+import { readJob } from "@/api/job";
 import { JOBS_PATH, PROFILE_PATH } from "@/lib/site";
 
 type JobPageProps = {
@@ -17,17 +17,16 @@ type JobPageProps = {
 export default function JobPage({ params }: JobPageProps) {
   const { "job-id": jobIdParam } = use(params);
   const jobId = Number(jobIdParam);
-  const job = useLiveQuery(async () => {
+  const result = useLiveQuery(async () => {
     if (!Number.isFinite(jobId)) return null;
-    const row = await db.jobs.get(jobId);
-    return row ?? null;
+    return readJob(jobId);
   }, [jobId]);
 
   const title =
-    job === undefined
+    result === undefined
       ? "Loading…"
-      : job
-        ? job.jobTitle || "Untitled job"
+      : result
+        ? result.job.jobTitle || "Untitled job"
         : "Job not found";
 
   return (
@@ -41,9 +40,9 @@ export default function JobPage({ params }: JobPageProps) {
       <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6">
         <h1 className="text-base font-semibold text-zinc-900">{title}</h1>
 
-        {job === undefined ? (
+        {result === undefined ? (
           <p className="text-sm text-zinc-500">Loading job…</p>
-        ) : job === null ? (
+        ) : result === null ? (
           <div className="rounded-lg border border-zinc-200 bg-white px-5 py-8 text-center shadow-sm">
             <p className="text-sm text-zinc-600">
               No job found with id {jobIdParam}.
@@ -57,7 +56,7 @@ export default function JobPage({ params }: JobPageProps) {
           </div>
         ) : (
           <pre className="overflow-auto rounded-lg border border-zinc-200 bg-white p-4 font-mono text-xs leading-relaxed text-zinc-800 shadow-sm sm:text-sm">
-            {JSON.stringify(job, null, 2)}
+            {JSON.stringify(result, null, 2)}
           </pre>
         )}
       </main>

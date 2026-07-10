@@ -8,8 +8,8 @@ import Button from "@/components/Button";
 import ApiKeyModal from "@/components/Jobs/ApiKeyModal";
 import ApplyJobModal from "@/components/Jobs/ApplyJobModal";
 import DeleteJobModal from "@/components/Jobs/DeleteJobModal";
+import { listJobs } from "@/api/job";
 import { useAiConfig } from "@/context/AiConfigContext";
-import { db } from "@/db";
 import { jobPath, PROFILE_PATH } from "@/lib/site";
 
 type PendingDelete = {
@@ -26,7 +26,7 @@ export default function JobsPage() {
     null,
   );
 
-  const jobs = useLiveQuery(() => db.jobs.orderBy("id").reverse().toArray());
+  const jobs = useLiveQuery(() => listJobs());
 
   function handleApplyClick() {
     if (!config) {

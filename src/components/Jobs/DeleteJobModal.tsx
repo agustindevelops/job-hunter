@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Button from "@/components/Button";
 import Modal from "@/components/Modal";
-import { deleteJob } from "@/db/jobs";
+import { deleteJob } from "@/api/job";
 
 type DeleteJobModalProps = {
   open: boolean;

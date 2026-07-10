@@ -1,5 +1,12 @@
 export type LocationType = "hybrid" | "remote" | "on_site" | "unknown";
 
+export type ApplicationStatus =
+  | "master"
+  | "applied"
+  | "rejected"
+  | "interviewed"
+  | "accepted";
+
 export type Contact = {
   id?: number;
   phone?: string;
@@ -12,9 +19,17 @@ export type Contact = {
   githubUrl?: string;
 };
 
+export type ApplicationRow = {
+  id?: number;
+  status: ApplicationStatus;
+  /** Markdown — master: personal blurb; tailored: cover letter */
+  coverLetter: string;
+};
+
 export type ProfileRow = {
   id?: number;
   contactId: number;
+  applicationId: number;
   fullName: string;
   headline: string;
   summary: string;
@@ -28,7 +43,7 @@ export type TargetRole = {
 
 export type ExperienceRow = {
   id?: number;
-  profileId: number;
+  applicationId: number;
   company: string;
   title: string;
   location?: string;
@@ -47,7 +62,7 @@ export type ProjectLink = {
 
 export type ProjectRow = {
   id?: number;
-  profileId: number;
+  applicationId: number;
   name: string;
   type?: string;
   status?: string;
@@ -59,7 +74,7 @@ export type ProjectRow = {
 
 export type EducationRow = {
   id?: number;
-  profileId: number;
+  applicationId: number;
   school: string;
   location?: string;
   degree?: string | null;
@@ -71,28 +86,30 @@ export type EducationRow = {
 
 export type SkillCategoryRow = {
   id?: number;
-  profileId: number;
+  applicationId: number;
   category: string;
   skills: string[];
 };
 
 export type AchievementRow = {
   id?: number;
-  profileId: number;
+  applicationId: number;
   title?: string;
   description: string;
   relatedTo?: string;
 };
 
+export type FaqRow = {
+  id?: number;
+  applicationId: number;
+  question: string;
+  /** Markdown */
+  answer: string;
+};
+
 export type Tag = {
   id?: number;
   name: string;
-};
-
-export type ProfileTag = {
-  id?: number;
-  profileId: number;
-  tagId: number;
 };
 
 export type ExperienceTag = {
@@ -134,6 +151,7 @@ export type BenefitType = {
 export type Job = {
   id?: number;
   contactId: number;
+  applicationId?: number | null;
   link: string;
   salaryMin: number | null;
   salaryMax: number | null;
