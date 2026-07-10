@@ -12,7 +12,7 @@ export default function Experience({ experience }: ExperienceProps) {
   if (!experience.length) return null;
 
   return (
-    <Section title="Experience">
+    <Section title="Professional Experience">
       {experience.map((job) => (
         <View
           key={`${job.company}-${job.title}`}
@@ -20,16 +20,17 @@ export default function Experience({ experience }: ExperienceProps) {
           wrap={false}
         >
           <View style={styles.itemHeader}>
-            <Text style={styles.itemTitle}>
-              {job.title} — {job.company}
+            <Text style={styles.companyLine}>
+              <Text style={styles.company}>{job.company}</Text>
+              {job.location ? (
+                <Text style={styles.location}> - {job.location}</Text>
+              ) : null}
             </Text>
-            <Text style={styles.itemMeta}>
+            <Text style={styles.dates}>
               {formatDateRange(job.startDate, job.endDate, job.current)}
             </Text>
           </View>
-          {job.location ? (
-            <Text style={styles.itemMeta}>{job.location}</Text>
-          ) : null}
+          <Text style={styles.title}>{job.title}</Text>
           {job.summary ? <Text style={styles.body}>{job.summary}</Text> : null}
           {job.bullets.map((bullet) => (
             <Text key={bullet} style={styles.bullet}>

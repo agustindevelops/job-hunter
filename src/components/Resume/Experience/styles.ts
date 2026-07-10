@@ -7,15 +7,30 @@ export const styles = StyleSheet.create({
   itemHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: 2,
   },
-  itemTitle: {
+  companyLine: {
+    fontSize: 10,
+    flexGrow: 1,
+    flexShrink: 1,
+    paddingRight: 8,
+  },
+  company: {
+    color: "#0f766e",
+  },
+  location: {
+    color: "#1a1a1a",
+  },
+  dates: {
+    fontSize: 10,
+    color: "#1a1a1a",
+    flexShrink: 0,
+  },
+  title: {
     fontFamily: "Helvetica-Bold",
     fontSize: 10,
-  },
-  itemMeta: {
-    color: "#555",
-    fontSize: 9,
+    marginBottom: 2,
   },
   body: {
     color: "#333",

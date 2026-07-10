@@ -2,20 +2,19 @@ import { StyleSheet } from "@react-pdf/renderer";
 
 export const styles = StyleSheet.create({
   root: {
-    marginBottom: 8,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 8,
+    height: 36,
   },
   name: {
-    fontSize: 20,
+    fontSize: 22,
     fontFamily: "Helvetica-Bold",
-    marginBottom: 4,
   },
-  headline: {
-    fontSize: 11,
-    color: "#333",
-    marginBottom: 4,
-  },
-  contactRow: {
-    color: "#444",
-    fontSize: 9,
+  title: {
+    fontSize: 14,
+    color: "#1a1a1a",
+    fontFamily: "Helvetica-Bold",
+    alignSelf: "flex-end",
   },
 });

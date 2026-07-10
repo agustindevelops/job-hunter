@@ -12,9 +12,11 @@ export type Profile = {
   fullName: string;
   headline: string;
   summary: string;
-  location?: string;
   phone?: string;
   email?: string;
+  city?: string;
+  state?: string;
+  zipcode?: string;
   portfolioUrl?: string;
   linkedinUrl?: string;
   githubUrl?: string;

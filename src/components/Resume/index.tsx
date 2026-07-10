@@ -22,8 +22,8 @@ export default function Resume({ data }: ResumeProps) {
         <Subheader profile={profile} />
         <Experience experience={experience} />
         <Projects projects={projects} />
-        <Education education={education} />
         <Skills skills={skills} />
+        <Education education={education} />
       </Page>
     </Document>
   );
