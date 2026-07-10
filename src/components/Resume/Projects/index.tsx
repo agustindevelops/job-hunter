@@ -1,5 +1,5 @@
 import { Text, View } from "@react-pdf/renderer";
-import type { Project } from "@/types/resume";
+import type { Project } from "@/types/profile";
 import Section from "../Section";
 import { styles } from "./styles";
 

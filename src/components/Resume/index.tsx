@@ -1,5 +1,5 @@
 import { Document, Page } from "@react-pdf/renderer";
-import type { ResumeProfile } from "@/types/resume";
+import type { ProfileBundle } from "@/types/profile";
 import Education from "./Education";
 import Experience from "./Experience";
 import Header from "./Header";
@@ -9,7 +9,7 @@ import Subheader from "./Subheader";
 import { styles } from "./styles";
 
 type ResumeProps = {
-  data: ResumeProfile;
+  data: ProfileBundle;
 };
 
 export default function Resume({ data }: ResumeProps) {

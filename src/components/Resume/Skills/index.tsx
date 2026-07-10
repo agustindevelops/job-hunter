@@ -1,5 +1,5 @@
 import { Text } from "@react-pdf/renderer";
-import type { SkillCategory } from "@/types/resume";
+import type { SkillCategory } from "@/types/profile";
 import Section from "../Section";
 import { styles } from "./styles";
 

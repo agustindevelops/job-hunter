@@ -1,5 +1,5 @@
 import { Text, View } from "@react-pdf/renderer";
-import type { Experience as ExperienceItem } from "@/types/resume";
+import type { Experience as ExperienceItem } from "@/types/profile";
 import Section from "../Section";
 import { formatDateRange } from "../utils";
 import { styles } from "./styles";

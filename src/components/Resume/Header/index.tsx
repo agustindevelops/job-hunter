@@ -1,5 +1,5 @@
 import { Text, View } from "@react-pdf/renderer";
-import type { Profile } from "@/types/resume";
+import type { Profile } from "@/types/profile";
 import { styles } from "./styles";
 
 type HeaderProps = {

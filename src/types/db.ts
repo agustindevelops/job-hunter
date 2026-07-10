@@ -1,0 +1,160 @@
+export type LocationType = "hybrid" | "remote" | "on_site" | "unknown";
+
+export type Contact = {
+  id?: number;
+  phone?: string;
+  email?: string;
+  city?: string;
+  state?: string;
+  zipcode?: string;
+  portfolioUrl?: string;
+  linkedinUrl?: string;
+  githubUrl?: string;
+};
+
+export type ProfileRow = {
+  id?: number;
+  contactId: number;
+  fullName: string;
+  headline: string;
+  summary: string;
+};
+
+export type TargetRole = {
+  id?: number;
+  profileId: number;
+  role: string;
+};
+
+export type ExperienceRow = {
+  id?: number;
+  profileId: number;
+  company: string;
+  title: string;
+  location?: string;
+  startDate: string;
+  endDate?: string | null;
+  current?: boolean;
+  summary?: string;
+  bullets: string[];
+  technologies?: string[];
+};
+
+export type ProjectLink = {
+  label: string;
+  url: string;
+};
+
+export type ProjectRow = {
+  id?: number;
+  profileId: number;
+  name: string;
+  type?: string;
+  status?: string;
+  summary?: string;
+  bullets: string[];
+  technologies?: string[];
+  links?: ProjectLink[];
+};
+
+export type EducationRow = {
+  id?: number;
+  profileId: number;
+  school: string;
+  location?: string;
+  degree?: string | null;
+  fieldOfStudy?: string;
+  graduationDate?: string | null;
+  coursework?: string[];
+  bullets?: string[];
+};
+
+export type SkillCategoryRow = {
+  id?: number;
+  profileId: number;
+  category: string;
+  skills: string[];
+};
+
+export type AchievementRow = {
+  id?: number;
+  profileId: number;
+  title?: string;
+  description: string;
+  relatedTo?: string;
+};
+
+export type Tag = {
+  id?: number;
+  name: string;
+};
+
+export type ProfileTag = {
+  id?: number;
+  profileId: number;
+  tagId: number;
+};
+
+export type ExperienceTag = {
+  id?: number;
+  experienceId: number;
+  tagId: number;
+};
+
+export type ProjectTag = {
+  id?: number;
+  projectId: number;
+  tagId: number;
+};
+
+export type EducationTag = {
+  id?: number;
+  educationId: number;
+  tagId: number;
+};
+
+export type SkillCategoryTag = {
+  id?: number;
+  skillCategoryId: number;
+  tagId: number;
+};
+
+export type AchievementTag = {
+  id?: number;
+  achievementId: number;
+  tagId: number;
+};
+
+export type BenefitType = {
+  id?: number;
+  name: string;
+  label?: string;
+};
+
+export type Job = {
+  id?: number;
+  contactId: number;
+  link: string;
+  salaryMin: number | null;
+  salaryMax: number | null;
+  location: string;
+  locationType: LocationType;
+  minYearsOfExperience: string;
+  maxYearsOfExperience: string;
+  experienceLevel: string;
+  jobTitle: string;
+  dataDump: string;
+  body: string;
+};
+
+export type JobTag = {
+  id?: number;
+  jobId: number;
+  tagId: number;
+};
+
+export type JobBenefit = {
+  id?: number;
+  jobId: number;
+  benefitTypeId: number;
+};

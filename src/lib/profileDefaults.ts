@@ -1,6 +1,6 @@
-import type { ResumeProfile } from "@/types/resume";
+import type { ProfileBundle } from "@/types/profile";
 
-export const EMPTY_RESUME_PROFILE: ResumeProfile = {
+export const EMPTY_PROFILE_BUNDLE: ProfileBundle = {
   profile: {
     fullName: "",
     headline: "",

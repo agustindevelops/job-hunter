@@ -7,9 +7,9 @@ import AGUSTIN from "../../../resume_data/agustin";
 import AppHeader from "@/components/AppHeader";
 import Button from "@/components/Button";
 import Resume from "@/components/Resume";
-import { EMPTY_RESUME_PROFILE } from "@/lib/resumeDefaults";
+import { EMPTY_PROFILE_BUNDLE } from "@/lib/profileDefaults";
 import { JOBS_PATH } from "@/lib/site";
-import type { ResumeProfile } from "@/types/resume";
+import type { ProfileBundle } from "@/types/profile";
 
 const fieldClassName =
   "w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-500";
@@ -20,8 +20,8 @@ export default function ProfilePage() {
   const document = useMemo(() => <Resume data={AGUSTIN} />, []);
   const fileName = "agustin-manriquez-cruz-resume.pdf";
 
-  const { register } = useForm<ResumeProfile>({
-    defaultValues: EMPTY_RESUME_PROFILE,
+  const { register } = useForm<ProfileBundle>({
+    defaultValues: EMPTY_PROFILE_BUNDLE,
   });
 
   useEffect(() => {

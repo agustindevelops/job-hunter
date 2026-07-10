@@ -1,4 +1,4 @@
-export type ResumeProfile = {
+export type ProfileBundle = {
   profile: Profile;
   targetRoles: string[];
   experience: Experience[];

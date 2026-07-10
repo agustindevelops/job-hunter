@@ -1,5 +1,5 @@
 import { Text, View } from "@react-pdf/renderer";
-import type { Education as EducationItem } from "@/types/resume";
+import type { Education as EducationItem } from "@/types/profile";
 import Section from "../Section";
 import { formatDate } from "../utils";
 import { styles } from "./styles";
