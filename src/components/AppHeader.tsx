@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { JOBS_PATH, PROFILE_PATH, SITE_NAME } from "@/lib/site";
+import {
+  GUIDES_PATH,
+  JOBS_PATH,
+  PROFILE_PATH,
+  SITE_NAME,
+} from "@/lib/site";
 
 function ProfileIcon({ className }: { className?: string }) {
   return (
@@ -23,11 +28,22 @@ function ProfileIcon({ className }: { className?: string }) {
   );
 }
 
+function navLinkClass(active: boolean) {
+  return `rounded-md px-3 py-1.5 text-sm font-medium ${
+    active
+      ? "bg-zinc-100 text-zinc-900"
+      : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
+  }`;
+}
+
 export default function AppHeader() {
   const pathname = usePathname();
   const onJobs =
     pathname === JOBS_PATH || pathname.startsWith(`${JOBS_PATH}/`);
-  const onProfile = pathname === PROFILE_PATH || pathname.startsWith(`${PROFILE_PATH}/`);
+  const onGuides =
+    pathname === GUIDES_PATH || pathname.startsWith(`${GUIDES_PATH}/`);
+  const onProfile =
+    pathname === PROFILE_PATH || pathname.startsWith(`${PROFILE_PATH}/`);
 
   return (
     <header className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-zinc-200 bg-white px-4 py-3 sm:px-6">
@@ -39,15 +55,11 @@ export default function AppHeader() {
       </Link>
 
       <nav className="flex items-center gap-1 sm:gap-2">
-        <Link
-          href={JOBS_PATH}
-          className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-            onJobs
-              ? "bg-zinc-100 text-zinc-900"
-              : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
-          }`}
-        >
+        <Link href={JOBS_PATH} className={navLinkClass(onJobs)}>
           Jobs
+        </Link>
+        <Link href={GUIDES_PATH} className={navLinkClass(onGuides)}>
+          Guides
         </Link>
         <Link
           href={PROFILE_PATH}

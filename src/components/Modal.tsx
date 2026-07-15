@@ -33,7 +33,7 @@ export default function Modal({
   return (
     <dialog
       ref={dialogRef}
-      className="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-lg rounded-lg border border-zinc-200 bg-white p-0 text-zinc-900 shadow-lg backdrop:bg-zinc-900/40 open:flex open:flex-col"
+      className="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-xl rounded-lg border border-zinc-200 bg-white p-0 text-zinc-900 shadow-lg backdrop:bg-zinc-900/40 open:flex open:flex-col"
       onClose={onClose}
       onClick={(event) => {
         if (event.target === dialogRef.current) onClose();

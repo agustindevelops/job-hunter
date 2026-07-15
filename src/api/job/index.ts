@@ -1,5 +1,7 @@
 export { clearJobApplication } from "./clearApplication";
-export { createJobFromApply, enrichJobFromDump } from "./apply";
+export { createJobFromApply } from "./apply";
+export { jobFromDump } from "./fromDump";
+export type { JobFromDumpFields } from "./fromDump";
 export { deleteJob } from "./delete";
 export { listJobs } from "./list";
 export { readJob } from "./read";

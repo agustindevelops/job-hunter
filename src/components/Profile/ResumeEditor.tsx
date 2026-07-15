@@ -1,13 +1,16 @@
 "use client";
 
-import { PDFDownloadLink, PDFViewer, pdf } from "@react-pdf/renderer";
+import { PDFViewer, pdf } from "@react-pdf/renderer";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
+import type { MasterFromDumpMode } from "@/api/application";
 import AppHeader from "@/components/AppHeader";
 import Button from "@/components/Button";
+import DumpMasterModal from "@/components/Profile/DumpMasterModal";
 import ProfileForm from "@/components/Profile/ProfileForm";
 import Resume from "@/components/Resume";
+import { useAiConfig } from "@/context/AiConfigContext";
 import {
   EMPTY_PROFILE_FORM,
   formValuesToProfileBundle,
@@ -18,6 +21,12 @@ const PDF_PREVIEW_DEBOUNCE_MS = 3000;
 
 type ViewMode = "edit" | "preview";
 
+export type MasterDumpRequest = {
+  mode: MasterFromDumpMode;
+  dataDump: string;
+  current: ProfileFormValues;
+};
+
 type ResumeEditorProps = {
   /** Extra page actions in the toolbar (e.g. Clear resume) */
   toolbarActions?: ReactNode;
@@ -27,6 +36,11 @@ type ResumeEditorProps = {
   load: () => Promise<ProfileFormValues>;
   save: (values: ProfileFormValues) => Promise<ProfileFormValues | void>;
   reloadKey?: string | number;
+  /**
+   * When set, shows Add / Replace toolbar actions that dump text into a
+   * master profile via AI. Should return form values to apply after success.
+   */
+  onMasterDump?: (request: MasterDumpRequest) => Promise<ProfileFormValues>;
 };
 
 export default function ResumeEditor({
@@ -36,6 +50,7 @@ export default function ResumeEditor({
   load,
   save,
   reloadKey,
+  onMasterDump,
 }: ResumeEditorProps) {
   const [ready, setReady] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -45,11 +60,15 @@ export default function ResumeEditor({
   const [viewMode, setViewMode] = useState<ViewMode>("edit");
   const [previewValues, setPreviewValues] =
     useState<ProfileFormValues>(EMPTY_PROFILE_FORM);
+  const [dumpMode, setDumpMode] = useState<MasterFromDumpMode | null>(null);
+  const { openApiKeyModal } = useAiConfig();
 
   const loadRef = useRef(load);
   const saveRef = useRef(save);
+  const onMasterDumpRef = useRef(onMasterDump);
   loadRef.current = load;
   saveRef.current = save;
+  onMasterDumpRef.current = onMasterDump;
 
   const form = useForm<ProfileFormValues>({
     defaultValues: EMPTY_PROFILE_FORM,
@@ -69,10 +88,6 @@ export default function ResumeEditor({
     [previewValues],
   );
   const document = useMemo(() => <Resume data={bundle} />, [bundle]);
-  const fileName = `${(bundle.profile.fullName || "resume")
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "-")}-resume.pdf`;
 
   useEffect(() => {
     setReady(true);
@@ -140,54 +155,103 @@ export default function ResumeEditor({
     setViewMode("preview");
   }
 
+  async function handleMasterDump(dataDump: string) {
+    const run = onMasterDumpRef.current;
+    if (!run || !dumpMode) return;
+    const next = await run({
+      mode: dumpMode,
+      dataDump,
+      current: getValues(),
+    });
+    reset(next);
+    setPreviewValues(next);
+    setViewMode("edit");
+  }
+
+  const dumpDisabled = loading || !!loadError || saving;
+
   return (
     <div className="flex min-h-full flex-1 flex-col bg-zinc-100">
       <AppHeader />
 
-      <div className="flex flex-wrap items-center justify-end gap-2 border-b border-zinc-200 bg-white px-4 py-2 sm:px-6">
-        {toolbarActions}
-        {viewMode === "edit" ? (
-          <Button
-            variant="secondary"
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 bg-white px-4 py-2 sm:px-6">
+        <div
+          role="tablist"
+          aria-label="View mode"
+          className="inline-flex rounded-md border border-zinc-300 bg-zinc-100 p-0.5"
+        >
+          <button
             type="button"
-            onClick={handlePreview}
-            disabled={loading || !!loadError}
-          >
-            Preview
-          </Button>
-        ) : (
-          <Button
-            variant="secondary"
-            type="button"
+            role="tab"
+            aria-selected={viewMode === "edit"}
+            id="resume-tab-edit"
+            className={`rounded px-3 py-1 text-sm font-medium transition-colors ${
+              viewMode === "edit"
+                ? "bg-white text-zinc-900 shadow-sm"
+                : "text-zinc-600 hover:text-zinc-900"
+            }`}
             onClick={() => setViewMode("edit")}
           >
             Edit
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={viewMode === "preview"}
+            id="resume-tab-preview"
+            disabled={loading || !!loadError}
+            className={`rounded px-3 py-1 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+              viewMode === "preview"
+                ? "bg-white text-zinc-900 shadow-sm"
+                : "text-zinc-600 hover:text-zinc-900"
+            }`}
+            onClick={handlePreview}
+          >
+            Preview
+          </button>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {toolbarActions}
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={openApiKeyModal}
+          >
+            API key
           </Button>
-        )}
-        <Button
-          variant="secondary"
-          type="button"
-          onClick={() => void handleSubmit(handleSave)()}
-          disabled={saving || loading || !!loadError}
-        >
-          {saving ? "Saving…" : "Save"}
-        </Button>
-        <Button variant="secondary" type="button" onClick={handlePrint}>
-          Print PDF
-        </Button>
-        {ready ? (
-          <PDFDownloadLink document={document} fileName={fileName}>
-            {({ loading: pdfLoading }) => (
-              <span className="inline-flex rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
-                {pdfLoading ? "Preparing…" : "Download PDF"}
-              </span>
-            )}
-          </PDFDownloadLink>
-        ) : (
-          <span className="inline-flex rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-400">
-            Download PDF
-          </span>
-        )}
+          {onMasterDump ? (
+            <>
+              <Button
+                variant="secondary"
+                type="button"
+                onClick={() => setDumpMode("add")}
+                disabled={dumpDisabled}
+              >
+                Add
+              </Button>
+              <Button
+                variant="secondary"
+                type="button"
+                onClick={() => setDumpMode("replace")}
+                disabled={dumpDisabled}
+              >
+                Replace
+              </Button>
+            </>
+          ) : null}
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={() => void handleSubmit(handleSave)()}
+            disabled={saving || loading || !!loadError}
+          >
+            {saving ? "Saving…" : "Save"}
+          </Button>
+          <Button variant="secondary" type="button" onClick={handlePrint}>
+            Print PDF
+          </Button>
+        </div>
       </div>
 
       {loadError ? (
@@ -203,7 +267,11 @@ export default function ResumeEditor({
       ) : null}
 
       {viewMode === "preview" ? (
-        <div className="flex flex-1 justify-center p-4 sm:p-6">
+        <div
+          role="tabpanel"
+          aria-labelledby="resume-tab-preview"
+          className="flex flex-1 justify-center p-4 sm:p-6"
+        >
           {ready ? (
             <PDFViewer
               showToolbar={false}
@@ -218,7 +286,11 @@ export default function ResumeEditor({
           )}
         </div>
       ) : (
-        <div className="flex flex-1 flex-col gap-4 p-4 sm:p-6">
+        <div
+          role="tabpanel"
+          aria-labelledby="resume-tab-edit"
+          className="flex flex-1 flex-col gap-4 p-4 sm:p-6"
+        >
           {beforeForm}
 
           {loading ? (
@@ -234,6 +306,15 @@ export default function ResumeEditor({
           )}
         </div>
       )}
+
+      {onMasterDump ? (
+        <DumpMasterModal
+          open={dumpMode != null}
+          mode={dumpMode}
+          onClose={() => setDumpMode(null)}
+          onSubmit={handleMasterDump}
+        />
+      ) : null}
     </div>
   );
 }

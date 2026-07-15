@@ -3,12 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { isAiConfigCancelledError } from "@/api/ai";
+import { createJobFromApply } from "@/api/job";
 import Button from "@/components/Button";
 import Modal from "@/components/Modal";
-import { createJobFromApply } from "@/api/job";
 import { fieldClassName, labelClassName } from "@/lib/formStyles";
 import { jobPath } from "@/lib/site";
-import { useAiConfig } from "@/context/AiConfigContext";
 
 type ApplyJobModalProps = {
   open: boolean;
@@ -22,23 +22,31 @@ type ApplyJobFormValues = {
 
 export default function ApplyJobModal({ open, onClose }: ApplyJobModalProps) {
   const router = useRouter();
-  const { config } = useAiConfig();
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { register, handleSubmit, reset } = useForm<ApplyJobFormValues>({
     defaultValues: { url: "", dataDump: "" },
   });
 
   async function handleApply(values: ApplyJobFormValues) {
     setSaving(true);
+    setError(null);
     try {
       const id = await createJobFromApply({
         link: values.url,
         dataDump: values.dataDump,
-        aiConfig: config,
       });
       reset();
       onClose();
       router.push(jobPath(id));
+    } catch (err) {
+      if (isAiConfigCancelledError(err)) {
+        onClose();
+        return;
+      }
+      setError(
+        err instanceof Error ? err.message : "Failed to create job from dump",
+      );
     } finally {
       setSaving(false);
     }
@@ -46,6 +54,7 @@ export default function ApplyJobModal({ open, onClose }: ApplyJobModalProps) {
 
   function handleClose() {
     if (saving) return;
+    setError(null);
     reset();
     onClose();
   }
@@ -55,7 +64,7 @@ export default function ApplyJobModal({ open, onClose }: ApplyJobModalProps) {
       open={open}
       title="Apply for Job"
       onClose={handleClose}
-      description="Paste the posting URL and any raw job text you want the AI to use."
+      description="Paste the posting URL and raw job text. AI will match fields to the job schema; the original dump is kept for safekeeping."
     >
       <form
         className="flex flex-col gap-4"
@@ -87,6 +96,13 @@ export default function ApplyJobModal({ open, onClose }: ApplyJobModalProps) {
             {...register("dataDump", { required: true })}
           />
         </div>
+
+        {error ? (
+          <p className="text-sm text-red-600" role="alert">
+            {error}
+          </p>
+        ) : null}
+
         <div className="flex justify-end gap-2 pt-1">
           <Button
             type="button"
@@ -97,7 +113,7 @@ export default function ApplyJobModal({ open, onClose }: ApplyJobModalProps) {
             Cancel
           </Button>
           <Button type="submit" disabled={saving}>
-            {saving ? "Saving…" : "Continue"}
+            {saving ? "Matching…" : "Continue"}
           </Button>
         </div>
       </form>

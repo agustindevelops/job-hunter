@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { API_KEYS_GUIDE_PATH } from "@/lib/site";
 import Section from "./Section";
 
 const providers = [
@@ -33,7 +35,14 @@ export default function AiUsage() {
         To generate tailored documents, you can connect a supported AI model
         using your own API key. For safety, your key is not saved. You will need
         to enter it again in each browser session when you request an
-        AI-generated result.
+        AI-generated result.{" "}
+        <Link
+          href={API_KEYS_GUIDE_PATH}
+          className="font-medium text-black underline underline-offset-2 hover:text-zinc-700"
+        >
+          More info
+        </Link>{" "}
+        on temporary keys, where to create them, and pricing.
       </p>
 
       <h3 className="mt-8 text-lg font-medium text-black">Supported options</h3>
