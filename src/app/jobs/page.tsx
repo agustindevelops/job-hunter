@@ -5,12 +5,12 @@ import Link from "next/link";
 import { useState } from "react";
 import AppHeader from "@/components/AppHeader";
 import Button from "@/components/Button";
-import ApiKeyModal from "@/components/Jobs/ApiKeyModal";
 import ApplyJobModal from "@/components/Jobs/ApplyJobModal";
 import DeleteJobModal from "@/components/Jobs/DeleteJobModal";
+import { isAiConfigCancelledError } from "@/api/ai";
 import { listJobs } from "@/api/job";
 import { useAiConfig } from "@/context/AiConfigContext";
-import { jobPath, PROFILE_PATH } from "@/lib/site";
+import { jobPath } from "@/lib/site";
 
 type PendingDelete = {
   id: number;
@@ -18,46 +18,26 @@ type PendingDelete = {
 };
 
 export default function JobsPage() {
-  const { config } = useAiConfig();
-  const [apiKeyOpen, setApiKeyOpen] = useState(false);
+  const { config, openApiKeyModal, ensureConfig } = useAiConfig();
   const [applyOpen, setApplyOpen] = useState(false);
-  const [openApplyAfterSave, setOpenApplyAfterSave] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(
     null,
   );
 
   const jobs = useLiveQuery(() => listJobs());
 
-  function handleApplyClick() {
-    if (!config) {
-      setOpenApplyAfterSave(true);
-      setApiKeyOpen(true);
-      return;
-    }
-    setApplyOpen(true);
-  }
-
-  function handleManageApiKey() {
-    setOpenApplyAfterSave(false);
-    setApiKeyOpen(true);
-  }
-
-  function handleApiKeyClose() {
-    setApiKeyOpen(false);
-    setOpenApplyAfterSave(false);
-  }
-
-  function handleApiKeySaved() {
-    setApiKeyOpen(false);
-    if (openApplyAfterSave) {
-      setOpenApplyAfterSave(false);
+  async function handleApplyClick() {
+    try {
+      await ensureConfig();
       setApplyOpen(true);
+    } catch (error) {
+      if (!isAiConfigCancelledError(error)) throw error;
     }
   }
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-zinc-100">
-      <AppHeader cta={<Button href={PROFILE_PATH}>Edit profile</Button>} />
+      <AppHeader />
 
       <main className="flex flex-1 flex-col p-4 sm:p-6">
         <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
@@ -70,12 +50,12 @@ export default function JobsPage() {
                 <Button
                   type="button"
                   variant="secondary"
-                  onClick={handleManageApiKey}
+                  onClick={openApiKeyModal}
                 >
                   API key
                 </Button>
               ) : null}
-              <Button type="button" onClick={handleApplyClick}>
+              <Button type="button" onClick={() => void handleApplyClick()}>
                 Apply
               </Button>
             </div>
@@ -167,11 +147,6 @@ export default function JobsPage() {
         </div>
       </main>
 
-      <ApiKeyModal
-        open={apiKeyOpen}
-        onClose={handleApiKeyClose}
-        onSaved={handleApiKeySaved}
-      />
       <ApplyJobModal open={applyOpen} onClose={() => setApplyOpen(false)} />
       <DeleteJobModal
         open={pendingDelete != null}

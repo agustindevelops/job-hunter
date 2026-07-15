@@ -1,5 +1,6 @@
 import { requireId } from "@/api/_requireId";
 import { db } from "@/db";
+import { toLinkItems, toTextItems } from "@/lib/textItem";
 import type {
   AchievementRow,
   ApplicationStatus,
@@ -24,6 +25,38 @@ export type ApplicationTree = {
   achievements: Tagged<AchievementRow>[];
   faqs: FaqRow[];
 };
+
+function normalizeExperience(row: ExperienceRow): ExperienceRow {
+  return {
+    ...row,
+    bullets: toTextItems(row.bullets as never, { emptyRow: false }),
+    technologies: toTextItems(row.technologies as never, { emptyRow: false }),
+  };
+}
+
+function normalizeProject(row: ProjectRow): ProjectRow {
+  return {
+    ...row,
+    bullets: toTextItems(row.bullets as never, { emptyRow: false }),
+    technologies: toTextItems(row.technologies as never, { emptyRow: false }),
+    links: toLinkItems(row.links as never, { emptyRow: false }),
+  };
+}
+
+function normalizeEducation(row: EducationRow): EducationRow {
+  return {
+    ...row,
+    coursework: toTextItems(row.coursework as never, { emptyRow: false }),
+    bullets: toTextItems(row.bullets as never, { emptyRow: false }),
+  };
+}
+
+function normalizeSkillCategory(row: SkillCategoryRow): SkillCategoryRow {
+  return {
+    ...row,
+    skills: toTextItems(row.skills as never, { emptyRow: false }),
+  };
+}
 
 async function tagNamesFor(
   joinTable:
@@ -101,25 +134,25 @@ export async function readApplicationTree(
     coverLetter: app.coverLetter,
     experiences: await Promise.all(
       experiences.map(async (row) => ({
-        ...row,
+        ...normalizeExperience(row),
         tags: await tagNamesFor(db.experienceTags, "experienceId", row.id!),
       })),
     ),
     projects: await Promise.all(
       projects.map(async (row) => ({
-        ...row,
+        ...normalizeProject(row),
         tags: await tagNamesFor(db.projectTags, "projectId", row.id!),
       })),
     ),
     education: await Promise.all(
       education.map(async (row) => ({
-        ...row,
+        ...normalizeEducation(row),
         tags: await tagNamesFor(db.educationTags, "educationId", row.id!),
       })),
     ),
     skillCategories: await Promise.all(
       skillCategories.map(async (row) => ({
-        ...row,
+        ...normalizeSkillCategory(row),
         tags: await tagNamesFor(
           db.skillCategoryTags,
           "skillCategoryId",

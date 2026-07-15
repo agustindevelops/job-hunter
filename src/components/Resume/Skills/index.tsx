@@ -12,10 +12,10 @@ export default function Skills({ skills }: SkillsProps) {
 
   return (
     <Section title="Skills">
-      {skills.map((group) => (
-        <Text key={group.category} style={styles.row}>
+      {skills.map((group, index) => (
+        <Text key={index} style={styles.row}>
           <Text style={styles.label}>{group.category}: </Text>
-          {group.skills.join(", ")}
+          {group.skills.map((s) => s.text).join(", ")}
         </Text>
       ))}
     </Section>

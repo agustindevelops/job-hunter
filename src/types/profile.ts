@@ -1,3 +1,5 @@
+import type { TextItem, ProjectLink } from "@/types/db";
+
 export type ProfileBundle = {
   profile: Profile;
   targetRoles: string[];
@@ -32,9 +34,9 @@ export type Experience = {
   current?: boolean;
 
   summary?: string;
-  bullets: string[];
+  bullets: TextItem[];
 
-  technologies?: string[];
+  technologies?: TextItem[];
   tags: string[];
 };
 
@@ -44,10 +46,10 @@ export type Project = {
   status?: string; // live, in_progress, archived, etc.
 
   summary?: string;
-  bullets: string[];
+  bullets: TextItem[];
 
-  technologies?: string[];
-  links?: Link[];
+  technologies?: TextItem[];
+  links?: ProjectLink[];
   tags: string[];
 };
 
@@ -58,15 +60,15 @@ export type Education = {
   fieldOfStudy?: string;
   graduationDate?: string | null;
 
-  coursework?: string[];
-  bullets?: string[];
+  coursework?: TextItem[];
+  bullets?: TextItem[];
 
   tags: string[];
 };
 
 export type SkillCategory = {
   category: string; // Frontend, Backend, Cloud, Design, Operations, etc.
-  skills: string[];
+  skills: TextItem[];
   tags?: string[];
 };
 
@@ -77,7 +79,4 @@ export type Achievement = {
   tags: string[];
 };
 
-export type Link = {
-  label: string;
-  url: string;
-};
+export type Link = ProjectLink;

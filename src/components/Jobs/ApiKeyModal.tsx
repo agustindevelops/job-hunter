@@ -16,7 +16,7 @@ type ApiKeyModalProps = {
   open: boolean;
   onClose: () => void;
   /** Called after a new key is saved (not when deleting). */
-  onSaved?: () => void;
+  onSaved?: (config: AiConfig) => void;
 };
 
 type ApiKeyFormValues = AiConfig;
@@ -71,7 +71,7 @@ export default function ApiKeyModal({
       provider: trimmed.provider,
       baseUrl: trimmed.baseUrl,
     });
-    onSaved?.();
+    onSaved?.(trimmed);
   }
 
   function handleDelete() {

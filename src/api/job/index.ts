@@ -1,5 +1,10 @@
+export { clearJobApplication } from "./clearApplication";
 export { createJobFromApply, enrichJobFromDump } from "./apply";
 export { deleteJob } from "./delete";
 export { listJobs } from "./list";
 export { readJob } from "./read";
 export type { JobReadResult } from "./read";
+export { readJobResume } from "./readResume";
+export type { JobResumeResult } from "./readResume";
+export { updateJob } from "./update";
+export type { UpdateJobInput } from "./update";

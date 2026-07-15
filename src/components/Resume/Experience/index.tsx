@@ -13,12 +13,8 @@ export default function Experience({ experience }: ExperienceProps) {
 
   return (
     <Section title="Professional Experience">
-      {experience.map((job) => (
-        <View
-          key={`${job.company}-${job.title}`}
-          style={styles.item}
-          wrap={false}
-        >
+      {experience.map((job, jobIndex) => (
+        <View key={jobIndex} style={styles.item} wrap={false}>
           <View style={styles.itemHeader}>
             <Text style={styles.companyLine}>
               <Text style={styles.company}>{job.company}</Text>
@@ -33,8 +29,8 @@ export default function Experience({ experience }: ExperienceProps) {
           <Text style={styles.title}>{job.title}</Text>
           {job.summary ? <Text style={styles.body}>{job.summary}</Text> : null}
           {job.bullets.map((bullet) => (
-            <Text key={bullet} style={styles.bullet}>
-              • {bullet}
+            <Text key={bullet.id} style={styles.bullet}>
+              • {bullet.text}
             </Text>
           ))}
         </View>

@@ -1,0 +1,239 @@
+"use client";
+
+import { PDFDownloadLink, PDFViewer, pdf } from "@react-pdf/renderer";
+import type { ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useForm, useWatch } from "react-hook-form";
+import AppHeader from "@/components/AppHeader";
+import Button from "@/components/Button";
+import ProfileForm from "@/components/Profile/ProfileForm";
+import Resume from "@/components/Resume";
+import {
+  EMPTY_PROFILE_FORM,
+  formValuesToProfileBundle,
+  type ProfileFormValues,
+} from "@/lib/profileForm";
+
+const PDF_PREVIEW_DEBOUNCE_MS = 3000;
+
+type ViewMode = "edit" | "preview";
+
+type ResumeEditorProps = {
+  /** Extra page actions in the toolbar (e.g. Clear resume) */
+  toolbarActions?: ReactNode;
+  /** Rendered above the form (e.g. job details) */
+  beforeForm?: ReactNode;
+  loadingLabel?: string;
+  load: () => Promise<ProfileFormValues>;
+  save: (values: ProfileFormValues) => Promise<ProfileFormValues | void>;
+  reloadKey?: string | number;
+};
+
+export default function ResumeEditor({
+  toolbarActions,
+  beforeForm,
+  loadingLabel = "Loading resume…",
+  load,
+  save,
+  reloadKey,
+}: ResumeEditorProps) {
+  const [ready, setReady] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("edit");
+  const [previewValues, setPreviewValues] =
+    useState<ProfileFormValues>(EMPTY_PROFILE_FORM);
+
+  const loadRef = useRef(load);
+  const saveRef = useRef(save);
+  loadRef.current = load;
+  saveRef.current = save;
+
+  const form = useForm<ProfileFormValues>({
+    defaultValues: EMPTY_PROFILE_FORM,
+  });
+  const { reset, control, getValues, handleSubmit } = form;
+  const watched = useWatch({ control });
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setPreviewValues(watched as ProfileFormValues);
+    }, PDF_PREVIEW_DEBOUNCE_MS);
+    return () => window.clearTimeout(timer);
+  }, [watched]);
+
+  const bundle = useMemo(
+    () => formValuesToProfileBundle(previewValues),
+    [previewValues],
+  );
+  const document = useMemo(() => <Resume data={bundle} />, [bundle]);
+  const fileName = `${(bundle.profile.fullName || "resume")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")}-resume.pdf`;
+
+  useEffect(() => {
+    setReady(true);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function runLoad() {
+      setLoading(true);
+      setLoadError(null);
+      try {
+        const values = await loadRef.current();
+        if (cancelled) return;
+        reset(values);
+        setPreviewValues(values);
+      } catch (error) {
+        if (cancelled) return;
+        setLoadError(
+          error instanceof Error ? error.message : "Failed to load resume",
+        );
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    void runLoad();
+    return () => {
+      cancelled = true;
+    };
+  }, [reset, reloadKey]);
+
+  async function handleSave(values: ProfileFormValues) {
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const next = await saveRef.current(values);
+      if (next) {
+        reset(next);
+        setPreviewValues(next);
+      }
+    } catch (error) {
+      setSaveError(
+        error instanceof Error ? error.message : "Failed to save resume",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handlePrint() {
+    const latest = <Resume data={formValuesToProfileBundle(getValues())} />;
+    const blob = await pdf(latest).toBlob();
+    const url = URL.createObjectURL(blob);
+    const printWindow = window.open(url);
+    if (!printWindow) return;
+    printWindow.addEventListener("load", () => {
+      printWindow.focus();
+      printWindow.print();
+    });
+  }
+
+  function handlePreview() {
+    setPreviewValues(getValues());
+    setViewMode("preview");
+  }
+
+  return (
+    <div className="flex min-h-full flex-1 flex-col bg-zinc-100">
+      <AppHeader />
+
+      <div className="flex flex-wrap items-center justify-end gap-2 border-b border-zinc-200 bg-white px-4 py-2 sm:px-6">
+        {toolbarActions}
+        {viewMode === "edit" ? (
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={handlePreview}
+            disabled={loading || !!loadError}
+          >
+            Preview
+          </Button>
+        ) : (
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={() => setViewMode("edit")}
+          >
+            Edit
+          </Button>
+        )}
+        <Button
+          variant="secondary"
+          type="button"
+          onClick={() => void handleSubmit(handleSave)()}
+          disabled={saving || loading || !!loadError}
+        >
+          {saving ? "Saving…" : "Save"}
+        </Button>
+        <Button variant="secondary" type="button" onClick={handlePrint}>
+          Print PDF
+        </Button>
+        {ready ? (
+          <PDFDownloadLink document={document} fileName={fileName}>
+            {({ loading: pdfLoading }) => (
+              <span className="inline-flex rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-800 hover:bg-zinc-50">
+                {pdfLoading ? "Preparing…" : "Download PDF"}
+              </span>
+            )}
+          </PDFDownloadLink>
+        ) : (
+          <span className="inline-flex rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-zinc-400">
+            Download PDF
+          </span>
+        )}
+      </div>
+
+      {loadError ? (
+        <div className="border-b border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 sm:px-6">
+          {loadError}
+        </div>
+      ) : null}
+
+      {saveError ? (
+        <div className="border-b border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 sm:px-6">
+          {saveError}
+        </div>
+      ) : null}
+
+      {viewMode === "preview" ? (
+        <div className="flex flex-1 justify-center p-4 sm:p-6">
+          {ready ? (
+            <PDFViewer
+              showToolbar={false}
+              className="h-[calc(100vh-5.5rem)] w-full max-w-[816px] overflow-hidden rounded-md border border-zinc-300 bg-white shadow-sm"
+            >
+              {document}
+            </PDFViewer>
+          ) : (
+            <div className="flex h-[calc(100vh-5.5rem)] w-full max-w-[816px] items-center justify-center rounded-md border border-zinc-300 bg-white text-sm text-zinc-500 shadow-sm">
+              Loading PDF preview…
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="flex flex-1 flex-col gap-4 p-4 sm:p-6">
+          {beforeForm}
+
+          {loading ? (
+            <div className="flex w-full items-center justify-center py-16 text-sm text-zinc-500">
+              {loadingLabel}
+            </div>
+          ) : loadError ? (
+            <div className="flex w-full items-center justify-center py-16 text-sm text-zinc-500">
+              Unable to load resume.
+            </div>
+          ) : (
+            <ProfileForm form={form} onSubmit={handleSave} saving={saving} />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

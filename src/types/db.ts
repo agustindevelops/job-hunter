@@ -7,6 +7,12 @@ export type ApplicationStatus =
   | "interviewed"
   | "accepted";
 
+/** Identifiable string entry for bullets, skills, technologies, etc. */
+export type TextItem = {
+  id: string;
+  text: string;
+};
+
 export type Contact = {
   id?: number;
   phone?: string;
@@ -51,11 +57,12 @@ export type ExperienceRow = {
   endDate?: string | null;
   current?: boolean;
   summary?: string;
-  bullets: string[];
-  technologies?: string[];
+  bullets: TextItem[];
+  technologies?: TextItem[];
 };
 
 export type ProjectLink = {
+  id: string;
   label: string;
   url: string;
 };
@@ -67,8 +74,8 @@ export type ProjectRow = {
   type?: string;
   status?: string;
   summary?: string;
-  bullets: string[];
-  technologies?: string[];
+  bullets: TextItem[];
+  technologies?: TextItem[];
   links?: ProjectLink[];
 };
 
@@ -80,15 +87,15 @@ export type EducationRow = {
   degree?: string | null;
   fieldOfStudy?: string;
   graduationDate?: string | null;
-  coursework?: string[];
-  bullets?: string[];
+  coursework?: TextItem[];
+  bullets?: TextItem[];
 };
 
 export type SkillCategoryRow = {
   id?: number;
   applicationId: number;
   category: string;
-  skills: string[];
+  skills: TextItem[];
 };
 
 export type AchievementRow = {

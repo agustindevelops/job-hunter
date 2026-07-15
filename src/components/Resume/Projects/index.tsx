@@ -12,20 +12,20 @@ export default function Projects({ projects }: ProjectsProps) {
 
   return (
     <Section title="Projects">
-      {projects.map((project) => (
-        <View key={project.name} style={styles.item} wrap={false}>
+      {projects.map((project, projectIndex) => (
+        <View key={projectIndex} style={styles.item} wrap={false}>
           <Text style={styles.itemTitle}>{project.name}</Text>
           {project.summary ? (
             <Text style={styles.body}>{project.summary}</Text>
           ) : null}
           {project.bullets.map((bullet) => (
-            <Text key={bullet} style={styles.bullet}>
-              • {bullet}
+            <Text key={bullet.id} style={styles.bullet}>
+              • {bullet.text}
             </Text>
           ))}
           {project.technologies?.length ? (
             <Text style={styles.itemMeta}>
-              {project.technologies.join(" · ")}
+              {project.technologies.map((t) => t.text).join(" · ")}
             </Text>
           ) : null}
           {project.links?.length ? (

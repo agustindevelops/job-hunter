@@ -13,12 +13,8 @@ export default function Education({ education }: EducationProps) {
 
   return (
     <Section title="Education">
-      {education.map((item) => (
-        <View
-          key={`${item.school}-${item.degree ?? item.fieldOfStudy}`}
-          style={styles.item}
-          wrap={false}
-        >
+      {education.map((item, itemIndex) => (
+        <View key={itemIndex} style={styles.item} wrap={false}>
           <View style={styles.itemHeader}>
             <Text style={styles.itemTitle}>
               {item.school}
@@ -35,8 +31,8 @@ export default function Education({ education }: EducationProps) {
             <Text style={styles.itemMeta}>{item.location}</Text>
           ) : null}
           {item.bullets?.map((bullet) => (
-            <Text key={bullet} style={styles.bullet}>
-              • {bullet}
+            <Text key={bullet.id} style={styles.bullet}>
+              • {bullet.text}
             </Text>
           ))}
         </View>

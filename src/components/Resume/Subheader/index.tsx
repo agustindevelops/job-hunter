@@ -24,7 +24,7 @@ export default function Subheader({ profile }: SubheaderProps) {
     <View style={styles.root}>
       <View style={styles.row}>
         {items.map((item, index) => (
-          <View key={item} style={styles.item}>
+          <View key={index} style={styles.item}>
             {index > 0 ? <View style={styles.dot} /> : null}
             <Text style={styles.text}>{item}</Text>
           </View>
