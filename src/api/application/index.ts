@@ -3,6 +3,8 @@ export { createResume } from "./createResume";
 export { createCoverLetter } from "./createCoverLetter";
 export { masterFromDump } from "./fromDump";
 export type { MasterFromDumpInput, MasterFromDumpMode } from "./fromDump";
+export { matchApplicationFromDump } from "./matchFromDump";
+export type { MatchApplicationFromDumpInput } from "./matchFromDump";
 export { readApplication } from "./read";
 export type { ApplicationTree } from "./_helpers";
 export { upsertApplication } from "./upsert";

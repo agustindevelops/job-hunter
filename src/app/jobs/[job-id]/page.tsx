@@ -143,7 +143,13 @@ export default function JobPage({ params }: JobPageProps) {
           </Button>
         ) : null
       }
-      beforeForm={<JobDetailsPanel jobId={jobId} result={jobResult} />}
+      beforeForm={
+        <JobDetailsPanel
+          jobId={jobId}
+          result={jobResult}
+          onUpdated={() => setResumeKey((k) => k + 1)}
+        />
+      }
       loadingLabel="Loading job resume…"
       load={load}
       save={save}

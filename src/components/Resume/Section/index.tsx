@@ -1,5 +1,5 @@
 import { Text, View } from "@react-pdf/renderer";
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import { styles } from "./styles";
 
 type SectionProps = {
@@ -9,9 +9,10 @@ type SectionProps = {
 
 export default function Section({ title, children }: SectionProps) {
   return (
-    <View style={styles.root}>
+    <Fragment>
       <Text style={styles.title}>{title}</Text>
       {children}
-    </View>
+      <View style={styles.spacer} />
+    </Fragment>
   );
 }

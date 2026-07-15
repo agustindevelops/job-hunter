@@ -1,4 +1,5 @@
 import { Text, View } from "@react-pdf/renderer";
+import { Fragment } from "react";
 import type { Project } from "@/types/profile";
 import Section from "../Section";
 import { styles } from "./styles";
@@ -7,34 +8,48 @@ type ProjectsProps = {
   projects: Project[];
 };
 
+function formatProjectLinks(links: NonNullable<Project["links"]>): string {
+  return links
+    .map((link) => link.url.trim())
+    .filter(Boolean)
+    .join(" · ");
+}
+
 export default function Projects({ projects }: ProjectsProps) {
   if (!projects.length) return null;
 
   return (
     <Section title="Projects">
-      {projects.map((project, projectIndex) => (
-        <View key={projectIndex} style={styles.item} wrap={false}>
-          <Text style={styles.itemTitle}>{project.name}</Text>
-          {project.summary ? (
-            <Text style={styles.body}>{project.summary}</Text>
-          ) : null}
-          {project.bullets.map((bullet) => (
-            <Text key={bullet.id} style={styles.bullet}>
-              • {bullet.text}
+      {projects.map((project, projectIndex) => {
+        const linkLine = project.links?.length
+          ? formatProjectLinks(project.links)
+          : "";
+
+        return (
+          <Fragment key={projectIndex}>
+            <Text style={styles.titleLine}>
+              <Text style={styles.itemTitle}>{project.name}</Text>
+              {linkLine ? (
+                <Text style={styles.link}> - {linkLine}</Text>
+              ) : null}
             </Text>
-          ))}
-          {project.technologies?.length ? (
-            <Text style={styles.itemMeta}>
-              {project.technologies.map((t) => t.text).join(" · ")}
-            </Text>
-          ) : null}
-          {project.links?.length ? (
-            <Text style={styles.itemMeta}>
-              {project.links.map((link) => link.url).join("  ·  ")}
-            </Text>
-          ) : null}
-        </View>
-      ))}
+            {project.summary ? (
+              <Text style={styles.body}>{project.summary}</Text>
+            ) : null}
+            {project.bullets.map((bullet) => (
+              <Text key={bullet.id} style={styles.bullet}>
+                • {bullet.text}
+              </Text>
+            ))}
+            {project.technologies?.length ? (
+              <Text style={styles.itemMeta}>
+                {project.technologies.map((t) => t.text).join(" · ")}
+              </Text>
+            ) : null}
+            <View style={styles.itemSpacer} />
+          </Fragment>
+        );
+      })}
     </Section>
   );
 }

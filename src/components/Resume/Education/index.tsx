@@ -1,4 +1,5 @@
 import { Text, View } from "@react-pdf/renderer";
+import { Fragment } from "react";
 import type { Education as EducationItem } from "@/types/profile";
 import Section from "../Section";
 import { formatDate } from "../utils";
@@ -14,7 +15,7 @@ export default function Education({ education }: EducationProps) {
   return (
     <Section title="Education">
       {education.map((item, itemIndex) => (
-        <View key={itemIndex} style={styles.item} wrap={false}>
+        <Fragment key={itemIndex}>
           <View style={styles.itemHeader}>
             <Text style={styles.itemTitle}>
               {item.school}
@@ -35,7 +36,8 @@ export default function Education({ education }: EducationProps) {
               • {bullet.text}
             </Text>
           ))}
-        </View>
+          <View style={styles.itemSpacer} />
+        </Fragment>
       ))}
     </Section>
   );

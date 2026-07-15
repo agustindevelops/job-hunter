@@ -1,9 +1,6 @@
 import { StyleSheet } from "@react-pdf/renderer";
 
 export const styles = StyleSheet.create({
-  root: {
-    marginBottom: 14,
-  },
   title: {
     fontSize: 11,
     fontFamily: "Helvetica-Bold",
@@ -13,5 +10,8 @@ export const styles = StyleSheet.create({
     borderBottomWidth: 0.75,
     borderBottomColor: "#999",
     paddingBottom: 3,
+  },
+  spacer: {
+    height: 14,
   },
 });

@@ -1,14 +1,11 @@
 import { StyleSheet } from "@react-pdf/renderer";
 
 export const styles = StyleSheet.create({
-  item: {
-    marginBottom: 8,
-  },
   itemHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 2,
+    paddingBottom: 2,
   },
   companyLine: {
     fontSize: 10,
@@ -30,15 +27,18 @@ export const styles = StyleSheet.create({
   title: {
     fontFamily: "Helvetica-Bold",
     fontSize: 10,
-    marginBottom: 2,
+    paddingBottom: 2,
   },
   body: {
     color: "#333",
-    marginBottom: 2,
+    paddingBottom: 2,
   },
   bullet: {
     color: "#333",
     marginLeft: 8,
-    marginBottom: 1,
+    paddingBottom: 1,
+  },
+  itemSpacer: {
+    height: 8,
   },
 });

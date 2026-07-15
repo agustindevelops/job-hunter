@@ -4,12 +4,11 @@ const accent = "#0f766e";
 
 export const styles = StyleSheet.create({
   root: {
-    marginBottom: 14,
     borderTopWidth: 1,
     borderBottomWidth: 1,
     borderTopColor: accent,
     borderBottomColor: accent,
-    paddingVertical: 6,
+    paddingVertical: 8,
   },
   row: {
     flexDirection: "row",
@@ -31,5 +30,8 @@ export const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: accent,
     marginHorizontal: 16,
+  },
+  spacer: {
+    height: 14,
   },
 });

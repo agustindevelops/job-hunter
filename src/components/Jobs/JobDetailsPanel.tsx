@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { matchApplicationFromDump } from "@/api/application";
 import { isAiConfigCancelledError } from "@/api/ai";
 import type { JobReadResult } from "@/api/job";
 import { jobFromDump, updateJob, type UpdateJobInput } from "@/api/job";
@@ -135,6 +136,7 @@ export default function JobDetailsPanel({
     setError(null);
     try {
       const matched = await jobFromDump(dataDump);
+
       if (editing) {
         const current = getValues();
         reset({
@@ -152,21 +154,28 @@ export default function JobDetailsPanel({
           body: matched.body,
           dataDump,
         });
-        return;
+      } else {
+        await updateJob(jobId, {
+          link: result.job.link,
+          jobTitle: matched.jobTitle,
+          location: matched.location,
+          locationType: matched.locationType,
+          salaryMin: matched.salaryMin,
+          salaryMax: matched.salaryMax,
+          minYearsOfExperience: matched.minYearsOfExperience,
+          maxYearsOfExperience: matched.maxYearsOfExperience,
+          experienceLevel: matched.experienceLevel,
+          body: matched.body,
+          dataDump,
+        });
       }
 
-      await updateJob(jobId, {
-        link: result.job.link,
-        jobTitle: matched.jobTitle,
-        location: matched.location,
-        locationType: matched.locationType,
-        salaryMin: matched.salaryMin,
-        salaryMax: matched.salaryMax,
-        minYearsOfExperience: matched.minYearsOfExperience,
-        maxYearsOfExperience: matched.maxYearsOfExperience,
-        experienceLevel: matched.experienceLevel,
-        body: matched.body,
+      // Clone master → tailored resume for this posting (core product value).
+      await matchApplicationFromDump({
+        jobId,
         dataDump,
+        jobTitle: matched.jobTitle,
+        jobBody: matched.body,
       });
       onUpdated?.();
     } catch (err) {
@@ -399,8 +408,8 @@ export default function JobDetailsPanel({
               {...register("dataDump")}
             />
             <p className="mt-1 text-xs text-zinc-500">
-              Original dump is kept as-is. Use Match from dump to refill
-              structured fields.
+              Original dump is kept as-is. Match from dump refills job fields
+              and clones your master resume, tailored for this posting.
             </p>
           </div>
         </form>
