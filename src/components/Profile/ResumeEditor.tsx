@@ -9,6 +9,7 @@ import AppHeader from "@/components/AppHeader";
 import Button from "@/components/Button";
 import DumpMasterModal from "@/components/Profile/DumpMasterModal";
 import ProfileForm from "@/components/Profile/ProfileForm";
+import CoverLetter from "@/components/CoverLetter";
 import Resume from "@/components/Resume";
 import { useAiConfig } from "@/context/AiConfigContext";
 import {
@@ -36,6 +37,8 @@ type ResumeEditorProps = {
   load: () => Promise<ProfileFormValues>;
   save: (values: ProfileFormValues) => Promise<ProfileFormValues | void>;
   reloadKey?: string | number;
+  /** Employer name for cover letter salutation (job pages). */
+  companyName?: string;
   /**
    * When set, shows Add / Replace toolbar actions that dump text into a
    * master profile via AI. Should return form values to apply after success.
@@ -50,6 +53,7 @@ export default function ResumeEditor({
   load,
   save,
   reloadKey,
+  companyName,
   onMasterDump,
 }: ResumeEditorProps) {
   const [ready, setReady] = useState(false);
@@ -87,7 +91,17 @@ export default function ResumeEditor({
     () => formValuesToProfileBundle(previewValues),
     [previewValues],
   );
-  const document = useMemo(() => <Resume data={bundle} />, [bundle]);
+  const resumeDocument = useMemo(() => <Resume data={bundle} />, [bundle]);
+  const coverLetterDocument = useMemo(
+    () => (
+      <CoverLetter
+        profile={bundle.profile}
+        coverLetter={previewValues.coverLetter}
+        companyName={companyName}
+      />
+    ),
+    [bundle.profile, previewValues.coverLetter, companyName],
+  );
 
   useEffect(() => {
     setReady(true);
@@ -270,20 +284,42 @@ export default function ResumeEditor({
         <div
           role="tabpanel"
           aria-labelledby="resume-tab-preview"
-          className="flex flex-1 justify-center p-4 sm:p-6"
+          className="grid flex-1 grid-cols-1 gap-4 p-4 lg:grid-cols-2 sm:p-6"
         >
-          {ready ? (
-            <PDFViewer
-              showToolbar={false}
-              className="h-[calc(100vh-5.5rem)] w-full max-w-[816px] overflow-hidden rounded-md border border-zinc-300 bg-white shadow-sm"
-            >
-              {document}
-            </PDFViewer>
-          ) : (
-            <div className="flex h-[calc(100vh-5.5rem)] w-full max-w-[816px] items-center justify-center rounded-md border border-zinc-300 bg-white text-sm text-zinc-500 shadow-sm">
-              Loading PDF preview…
-            </div>
-          )}
+          <div className="flex min-h-0 min-w-0 flex-col gap-2">
+            <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+              Resume
+            </p>
+            {ready ? (
+              <PDFViewer
+                showToolbar={false}
+                className="h-[calc(100vh-7rem)] w-full overflow-hidden rounded-md border border-zinc-300 bg-white shadow-sm"
+              >
+                {resumeDocument}
+              </PDFViewer>
+            ) : (
+              <div className="flex h-[calc(100vh-7rem)] w-full items-center justify-center rounded-md border border-zinc-300 bg-white text-sm text-zinc-500 shadow-sm">
+                Loading PDF preview…
+              </div>
+            )}
+          </div>
+          <div className="flex min-h-0 min-w-0 flex-col gap-2">
+            <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+              Cover letter
+            </p>
+            {ready ? (
+              <PDFViewer
+                showToolbar={false}
+                className="h-[calc(100vh-7rem)] w-full overflow-hidden rounded-md border border-zinc-300 bg-white shadow-sm"
+              >
+                {coverLetterDocument}
+              </PDFViewer>
+            ) : (
+              <div className="flex h-[calc(100vh-7rem)] w-full items-center justify-center rounded-md border border-zinc-300 bg-white text-sm text-zinc-500 shadow-sm">
+                Loading PDF preview…
+              </div>
+            )}
+          </div>
         </div>
       ) : (
         <div

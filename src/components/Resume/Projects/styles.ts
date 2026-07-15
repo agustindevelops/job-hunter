@@ -8,6 +8,7 @@ export const styles = StyleSheet.create({
   itemTitle: {
     fontFamily: "Helvetica-Bold",
     fontSize: 10,
+    color: "#0f766e",
   },
   link: {
     fontFamily: "Helvetica",

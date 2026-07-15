@@ -9,7 +9,7 @@ export type AiModelOption = {
   keyHint: string;
 };
 
-export const DEFAULT_MODEL_ID = "gpt-5.6-luna";
+export const DEFAULT_MODEL_ID = "gpt-5.6-terra";
 
 const OPENAI = {
   provider: "openai" as const,

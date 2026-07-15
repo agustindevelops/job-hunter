@@ -16,6 +16,7 @@ import {
   jobResumeToFormValues,
   type ProfileFormValues,
 } from "@/lib/profileForm";
+import { guessCompanyName } from "@/lib/guessCompanyName";
 import { JOBS_PATH } from "@/lib/site";
 
 type JobPageProps = {
@@ -131,6 +132,11 @@ export default function JobPage({ params }: JobPageProps) {
   return (
     <ResumeEditor
       reloadKey={`${jobId}-${resumeKey}`}
+      companyName={guessCompanyName({
+        jobTitle: jobResult.job.jobTitle,
+        body: jobResult.job.body,
+        dataDump: jobResult.job.dataDump,
+      })}
       toolbarActions={
         hasApplication ? (
           <Button

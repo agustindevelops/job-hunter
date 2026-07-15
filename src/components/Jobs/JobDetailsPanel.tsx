@@ -215,7 +215,7 @@ export default function JobDetailsPanel({
             Job details
           </p>
           {!editing ? (
-            <h2 className="mt-1 truncate text-base font-semibold text-zinc-900">
+            <h2 className="mt-1 text-base font-semibold wrap-break-word text-zinc-900">
               {title}
             </h2>
           ) : (
