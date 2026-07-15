@@ -19,13 +19,20 @@ export type {
 export {
   matchApplicationFromDump,
   tailoredApplicationSchema,
-  EDITORIAL_LIMITS,
   serializeMasterForPrompt,
   normalizeTailoredApplication,
+  assembleTailoredApplication,
+  copyEducationFromMaster,
   assertSafeTailoredShape,
   buildMatchPrompt,
   buildEditorialRepairPrompt,
+  buildExperienceEntityPrompt,
+  buildProjectEntityPrompt,
+  buildSkillsPrompt,
+  buildAchievementsPrompt,
+  buildCoverLetterPrompt,
   MATCH_SYSTEM_PROMPT,
+  ENTITY_SYSTEM_PROMPT,
 } from "./matchFromDump";
 export type {
   MatchApplicationFromDumpInput,

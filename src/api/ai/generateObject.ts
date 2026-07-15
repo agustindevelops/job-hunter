@@ -214,7 +214,7 @@ function defaultBuildRepairPrompt(
 PREVIOUS ATTEMPT FAILED VALIDATION.
 Error: ${reason}
 Return a complete, corrected JSON object that satisfies the schema.
-If the failure is an editorial budget (too many bullets/technologies or overlong text), select, merge, and rewrite — do not merely delete the last array items. Do not invent facts. Do not include commentary.`;
+Do not invent facts. Do not include commentary.`;
 }
 
 function toActionableError(error: unknown, previous?: unknown): Error {
