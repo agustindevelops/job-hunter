@@ -7,7 +7,11 @@ import { isAiConfigCancelledError } from "@/api/ai";
 import type { JobReadResult } from "@/api/job";
 import { jobFromDump, updateJob, type UpdateJobInput } from "@/api/job";
 import Button from "@/components/Button";
-import { fieldClassName, labelClassName } from "@/lib/formStyles";
+import {
+  fieldClassName,
+  growingTextareaClassName,
+  labelClassName,
+} from "@/lib/formStyles";
 import type { LocationType } from "@/types/db";
 
 const LOCATION_TYPES: { value: LocationType; label: string }[] = [
@@ -392,7 +396,7 @@ export default function JobDetailsPanel({
             <textarea
               id="jobBody"
               rows={6}
-              className={fieldClassName}
+              className={growingTextareaClassName}
               {...register("body")}
             />
           </div>

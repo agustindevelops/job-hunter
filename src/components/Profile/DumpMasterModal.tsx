@@ -26,13 +26,13 @@ const MODE_COPY: Record<
   add: {
     title: "Add from dump",
     description:
-      "Paste resume, LinkedIn, or notes text. AI will merge it into your current master profile.",
+      "Paste resume, LinkedIn, or notes. AI merges into your master profile — concise bullets, real facts only, ready to tailor per job.",
     submit: "Add",
   },
   replace: {
     title: "Replace from dump",
     description:
-      "Paste resume, LinkedIn, or notes text. AI will build a new master profile from this dump only.",
+      "Paste resume, LinkedIn, or notes. AI rebuilds your master from this dump only into a strong, scannable starting profile.",
     submit: "Replace",
   },
 };

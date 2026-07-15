@@ -8,3 +8,5 @@ export {
   isAiConfigCancelledError,
 } from "./errors";
 export { generateAiText, streamAiText } from "./generate";
+export { generateAiObject, extractJsonValue } from "./generateObject";
+export type { GenerateAiObjectOptions } from "./generateObject";

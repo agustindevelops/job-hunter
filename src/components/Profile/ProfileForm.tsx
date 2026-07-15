@@ -12,7 +12,11 @@ import {
   LinkListField,
   StringListField,
 } from "@/components/Profile/StringListField";
-import { fieldClassName, labelClassName } from "@/lib/formStyles";
+import {
+  fieldClassName,
+  growingTextareaClassName,
+  labelClassName,
+} from "@/lib/formStyles";
 import {
   createEmptyAchievement,
   createEmptyEducation,
@@ -363,7 +367,7 @@ export default function ProfileForm({
           <textarea
             id="coverLetter"
             rows={5}
-            className={fieldClassName}
+            className={growingTextareaClassName}
             placeholder="A reusable personal blurb or cover letter draft…"
             {...register("coverLetter")}
           />
