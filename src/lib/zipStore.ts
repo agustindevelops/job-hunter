@@ -27,15 +27,16 @@ export function zipStoreFiles(
   files: Array<{ name: string; data: ArrayBuffer | Uint8Array }>,
 ): Blob {
   const enc = new TextEncoder();
-  const parts: BlobPart[] = [];
-  const centralParts: Uint8Array[] = [];
+  // Uint8Array defaults to ArrayBufferLike; BlobPart expects ArrayBuffer views.
+  const parts: Uint8Array<ArrayBuffer>[] = [];
+  const centralParts: Uint8Array<ArrayBuffer>[] = [];
   let offset = 0;
 
   for (const file of files) {
     const nameBytes = enc.encode(file.name);
-    const data =
+    const data: Uint8Array<ArrayBuffer> =
       file.data instanceof Uint8Array
-        ? file.data
+        ? new Uint8Array(file.data)
         : new Uint8Array(file.data);
     const crc = crc32(data);
     const size = data.byteLength;
