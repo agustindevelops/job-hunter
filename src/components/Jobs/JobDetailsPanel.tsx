@@ -2,10 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { matchApplicationFromDump } from "@/api/application";
-import { isAiConfigCancelledError } from "@/api/ai";
 import type { JobReadResult } from "@/api/job";
-import { jobFromDump, updateJob, type UpdateJobInput } from "@/api/job";
+import { updateJob, type UpdateJobInput } from "@/api/job";
 import Button from "@/components/Button";
 import {
   fieldClassName,
@@ -88,10 +86,9 @@ export default function JobDetailsPanel({
 }: JobDetailsPanelProps) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [matching, setMatching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { register, handleSubmit, reset, getValues } =
+  const { register, handleSubmit, reset } =
     useForm<JobDetailsFormValues>({
       defaultValues: toFormValues(result.job),
     });
@@ -127,78 +124,11 @@ export default function JobDetailsPanel({
     }
   }
 
-  async function handleMatchFromDump() {
-    const dataDump = (
-      editing ? getValues("dataDump") : result.job.dataDump
-    ).trim();
-    if (!dataDump) {
-      setError("Add a data dump before matching");
-      return;
-    }
-
-    setMatching(true);
-    setError(null);
-    try {
-      const matched = await jobFromDump(dataDump);
-
-      if (editing) {
-        const current = getValues();
-        reset({
-          ...current,
-          jobTitle: matched.jobTitle,
-          location: matched.location,
-          locationType: matched.locationType,
-          salaryMin:
-            matched.salaryMin != null ? String(matched.salaryMin) : "",
-          salaryMax:
-            matched.salaryMax != null ? String(matched.salaryMax) : "",
-          minYearsOfExperience: matched.minYearsOfExperience,
-          maxYearsOfExperience: matched.maxYearsOfExperience,
-          experienceLevel: matched.experienceLevel,
-          body: matched.body,
-          dataDump,
-        });
-      } else {
-        await updateJob(jobId, {
-          link: result.job.link,
-          jobTitle: matched.jobTitle,
-          location: matched.location,
-          locationType: matched.locationType,
-          salaryMin: matched.salaryMin,
-          salaryMax: matched.salaryMax,
-          minYearsOfExperience: matched.minYearsOfExperience,
-          maxYearsOfExperience: matched.maxYearsOfExperience,
-          experienceLevel: matched.experienceLevel,
-          body: matched.body,
-          dataDump,
-        });
-      }
-
-      // Clone master → tailored resume for this posting (core product value).
-      await matchApplicationFromDump({
-        jobId,
-        dataDump,
-        jobTitle: matched.jobTitle,
-        jobBody: matched.body,
-      });
-      onUpdated?.();
-    } catch (err) {
-      if (isAiConfigCancelledError(err)) return;
-      setError(
-        err instanceof Error ? err.message : "Failed to match job from dump",
-      );
-    } finally {
-      setMatching(false);
-    }
-  }
-
   function handleCancel() {
     reset(toFormValues(result.job));
     setError(null);
     setEditing(false);
   }
-
-  const busy = saving || matching;
 
   const { job, tags, benefits } = result;
   const title = job.jobTitle.trim() || "Untitled job";
@@ -229,16 +159,8 @@ export default function JobDetailsPanel({
             <Button
               type="button"
               variant="secondary"
-              onClick={() => void handleMatchFromDump()}
-              disabled={busy}
-            >
-              {matching ? "Matching…" : "Match from dump"}
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
               onClick={() => setEditing(true)}
-              disabled={busy}
+              disabled={saving}
             >
               Edit
             </Button>
@@ -248,23 +170,15 @@ export default function JobDetailsPanel({
             <Button
               type="button"
               variant="secondary"
-              onClick={() => void handleMatchFromDump()}
-              disabled={busy}
-            >
-              {matching ? "Matching…" : "Match from dump"}
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
               onClick={handleCancel}
-              disabled={busy}
+              disabled={saving}
             >
               Cancel
             </Button>
             <Button
               type="button"
               onClick={() => void handleSubmit(onSave)()}
-              disabled={busy}
+              disabled={saving}
             >
               {saving ? "Saving…" : "Save"}
             </Button>
@@ -408,7 +322,7 @@ export default function JobDetailsPanel({
               id="dataDump"
               rows={5}
               className={fieldClassName}
-              disabled={busy}
+              disabled={saving}
               {...register("dataDump")}
             />
             <p className="mt-1 text-xs text-zinc-500">

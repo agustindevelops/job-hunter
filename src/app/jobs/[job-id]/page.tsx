@@ -3,8 +3,19 @@
 import Link from "next/link";
 import { use, useCallback, useEffect, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { ensureJobApplication, upsertApplication } from "@/api/application";
-import { clearJobApplication, readJob, readJobResume } from "@/api/job";
+import { isAiConfigCancelledError } from "@/api/ai";
+import {
+  ensureJobApplication,
+  matchApplicationFromDump,
+  upsertApplication,
+} from "@/api/application";
+import {
+  clearJobApplication,
+  jobFromDump,
+  readJob,
+  readJobResume,
+  updateJob,
+} from "@/api/job";
 import { upsertProfileIdentity } from "@/api/profile";
 import AppHeader from "@/components/AppHeader";
 import Button from "@/components/Button";
@@ -34,6 +45,8 @@ export default function JobPage({ params }: JobPageProps) {
   const jobId = Number(jobIdParam);
   const [resumeKey, setResumeKey] = useState(0);
   const [clearing, setClearing] = useState(false);
+  const [matching, setMatching] = useState(false);
+  const [matchError, setMatchError] = useState<string | null>(null);
 
   const jobResult = useLiveQuery(async () => {
     if (!Number.isFinite(jobId)) return null;
@@ -95,6 +108,50 @@ export default function JobPage({ params }: JobPageProps) {
     }
   }
 
+  async function handleMatchFromDump() {
+    const job = jobResult?.job;
+    if (!job) return;
+
+    const dataDump = job.dataDump.trim();
+    if (!dataDump) {
+      setMatchError("Add a data dump before matching");
+      return;
+    }
+
+    setMatching(true);
+    setMatchError(null);
+    try {
+      const matched = await jobFromDump(dataDump);
+      await updateJob(jobId, {
+        link: job.link,
+        jobTitle: matched.jobTitle,
+        location: matched.location,
+        locationType: matched.locationType,
+        salaryMin: matched.salaryMin,
+        salaryMax: matched.salaryMax,
+        minYearsOfExperience: matched.minYearsOfExperience,
+        maxYearsOfExperience: matched.maxYearsOfExperience,
+        experienceLevel: matched.experienceLevel,
+        body: matched.body,
+        dataDump,
+      });
+      await matchApplicationFromDump({
+        jobId,
+        dataDump,
+        jobTitle: matched.jobTitle,
+        jobBody: matched.body,
+      });
+      setResumeKey((k) => k + 1);
+    } catch (err) {
+      if (isAiConfigCancelledError(err)) return;
+      setMatchError(
+        err instanceof Error ? err.message : "Failed to match job from dump",
+      );
+    } finally {
+      setMatching(false);
+    }
+  }
+
   if (jobResult === null) {
     return (
       <div className="flex min-h-full flex-1 flex-col bg-zinc-100">
@@ -138,23 +195,40 @@ export default function JobPage({ params }: JobPageProps) {
         dataDump: jobResult.job.dataDump,
       })}
       toolbarActions={
-        hasApplication ? (
+        <>
           <Button
             type="button"
             variant="secondary"
-            disabled={clearing}
-            onClick={() => void handleClearResume()}
+            disabled={matching || clearing}
+            onClick={() => void handleMatchFromDump()}
           >
-            {clearing ? "Clearing…" : "Clear resume"}
+            {matching ? "Matching…" : "Match from dump"}
           </Button>
-        ) : null
+          {hasApplication ? (
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={clearing || matching}
+              onClick={() => void handleClearResume()}
+            >
+              {clearing ? "Clearing…" : "Clear resume"}
+            </Button>
+          ) : null}
+        </>
       }
       beforeForm={
-        <JobDetailsPanel
-          jobId={jobId}
-          result={jobResult}
-          onUpdated={() => setResumeKey((k) => k + 1)}
-        />
+        <>
+          {matchError ? (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+              {matchError}
+            </div>
+          ) : null}
+          <JobDetailsPanel
+            jobId={jobId}
+            result={jobResult}
+            onUpdated={() => setResumeKey((k) => k + 1)}
+          />
+        </>
       }
       loadingLabel="Loading job resume…"
       load={load}

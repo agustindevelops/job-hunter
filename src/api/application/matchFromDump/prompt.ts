@@ -41,7 +41,7 @@ Before finalizing, look across the entire entity for repeated:
 - Business outcomes
 - Hiring signals
 
-Establish shared context once, then build on it without restating it.
+Establish shared context once, then build on it without restating it. Never repeat the same stat, metric, or scale figure across the summary and bullets, or across multiple bullets. If a later line needs that information again, find a shorter reference that carries the meaning without restating the number — fewer words, same signal.
 
 For example, if one bullet establishes that a platform serves 1.2 million users, a later authentication bullet may refer to "the platform's user base" rather than repeating the same figure.
 

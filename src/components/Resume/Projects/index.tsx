@@ -30,7 +30,10 @@ export default function Projects({ projects }: ProjectsProps) {
             <Text style={styles.titleLine}>
               <Text style={styles.itemTitle}>{project.name}</Text>
               {linkLine ? (
-                <Text style={styles.link}> - {linkLine}</Text>
+                <>
+                  <Text> - </Text>
+                  <Text style={styles.link}>{linkLine}</Text>
+                </>
               ) : null}
             </Text>
             {project.summary ? (

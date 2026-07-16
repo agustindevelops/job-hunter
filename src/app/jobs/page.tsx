@@ -101,7 +101,7 @@ export default function JobsPage() {
                       <td className="px-4 py-3 sm:px-5">
                         <Link
                           href={jobPath(job.id!)}
-                          className="font-medium text-zinc-900 underline-offset-2 hover:underline"
+                          className="font-medium text-blue-600 underline underline-offset-2 hover:text-blue-800"
                         >
                           {job.jobTitle || "Untitled"}
                         </Link>
@@ -115,7 +115,7 @@ export default function JobsPage() {
                             href={job.link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-zinc-600 underline-offset-2 hover:text-zinc-900 hover:underline"
+                            className="text-blue-600 underline underline-offset-2 hover:text-blue-800"
                           >
                             {job.link}
                           </a>

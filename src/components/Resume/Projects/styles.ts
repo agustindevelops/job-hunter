@@ -12,7 +12,8 @@ export const styles = StyleSheet.create({
   },
   link: {
     fontFamily: "Helvetica",
-    color: "#1a1a1a",
+    color: "#0563C1",
+    textDecoration: "underline",
   },
   itemMeta: {
     color: "#555",

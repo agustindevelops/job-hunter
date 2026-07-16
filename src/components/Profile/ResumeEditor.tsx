@@ -17,10 +17,41 @@ import {
   formValuesToProfileBundle,
   type ProfileFormValues,
 } from "@/lib/profileForm";
+import { zipStoreFiles } from "@/lib/zipStore";
 
 const PDF_PREVIEW_DEBOUNCE_MS = 3000;
 
 type ViewMode = "edit" | "preview";
+
+function slugForFilename(value: string): string {
+  return (
+    value
+      .trim()
+      .replace(/[^\w]+/g, "_")
+      .replace(/^_+|_+$/g, "") || "document"
+  );
+}
+
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.rel = "noopener";
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  // Revoking immediately can cancel the download before it starts.
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
+
+function pdfBaseName(fullName: string, companyName?: string): string {
+  const name = slugForFilename(fullName || "Resume");
+  const company = companyName?.trim()
+    ? slugForFilename(companyName)
+    : null;
+  return company ? `${name}_${company}` : name;
+}
 
 export type MasterDumpRequest = {
   mode: MasterFromDumpMode;
@@ -152,16 +183,35 @@ export default function ResumeEditor({
     }
   }
 
-  async function handlePrint() {
-    const latest = <Resume data={formValuesToProfileBundle(getValues())} />;
-    const blob = await pdf(latest).toBlob();
-    const url = URL.createObjectURL(blob);
-    const printWindow = window.open(url);
-    if (!printWindow) return;
-    printWindow.addEventListener("load", () => {
-      printWindow.focus();
-      printWindow.print();
-    });
+  async function handleDownload() {
+    const values = getValues();
+    const bundle = formValuesToProfileBundle(values);
+    const base = pdfBaseName(values.fullName, companyName);
+
+    const [resumeBlob, coverLetterBlob] = await Promise.all([
+      pdf(<Resume data={bundle} />).toBlob(),
+      pdf(
+        <CoverLetter
+          profile={bundle.profile}
+          coverLetter={values.coverLetter}
+          companyName={companyName}
+        />,
+      ).toBlob(),
+    ]);
+
+    // Chrome blocks a second programmatic download after async work; zip
+    // both PDFs so one click always delivers resume + cover letter.
+    const zip = zipStoreFiles([
+      {
+        name: `${base}_Resume.pdf`,
+        data: await resumeBlob.arrayBuffer(),
+      },
+      {
+        name: `${base}_Cover_Letter.pdf`,
+        data: await coverLetterBlob.arrayBuffer(),
+      },
+    ]);
+    downloadBlob(zip, `${base}.zip`);
   }
 
   function handlePreview() {
@@ -262,8 +312,12 @@ export default function ResumeEditor({
           >
             {saving ? "Saving…" : "Save"}
           </Button>
-          <Button variant="secondary" type="button" onClick={handlePrint}>
-            Print PDF
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={() => void handleDownload()}
+          >
+            Download PDFs
           </Button>
         </div>
       </div>
