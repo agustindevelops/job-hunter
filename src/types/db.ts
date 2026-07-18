@@ -1,5 +1,8 @@
 export type LocationType = "hybrid" | "remote" | "on_site" | "unknown";
 
+/** Preferred work arrangement for ideal-job preferences. */
+export type PreferredLocationType = "remote" | "hybrid" | "on_site" | "any";
+
 export type ApplicationStatus =
   | "master"
   | "applied"
@@ -39,6 +42,11 @@ export type ProfileRow = {
   fullName: string;
   headline: string;
   summary: string;
+  /** Free-form description of the user's ideal job. */
+  idealJobDescription?: string;
+  preferredLocationType?: PreferredLocationType;
+  /** Minimum annual USD salary expectation. */
+  salaryMinExpectation?: number | null;
 };
 
 export type TargetRole = {
@@ -170,6 +178,14 @@ export type Job = {
   jobTitle: string;
   dataDump: string;
   body: string;
+  /** Average of the three compatibility metrics (1–5), one decimal. */
+  compatibilityScore?: number | null;
+  compatibilityQualification?: number | null;
+  compatibilityQualificationReason?: string;
+  compatibilityPreference?: number | null;
+  compatibilityPreferenceReason?: string;
+  compatibilityCompensation?: number | null;
+  compatibilityCompensationReason?: string;
 };
 
 export type JobTag = {
@@ -181,5 +197,11 @@ export type JobTag = {
 export type JobBenefit = {
   id?: number;
   jobId: number;
+  benefitTypeId: number;
+};
+
+export type ProfileBenefit = {
+  id?: number;
+  profileId: number;
   benefitTypeId: number;
 };

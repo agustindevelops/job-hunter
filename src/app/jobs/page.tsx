@@ -6,6 +6,7 @@ import { useState } from "react";
 import AppHeader from "@/components/AppHeader";
 import Button from "@/components/Button";
 import ApplyJobModal from "@/components/Jobs/ApplyJobModal";
+import CompatibilityScoreCell from "@/components/Jobs/CompatibilityScoreCell";
 import DeleteJobModal from "@/components/Jobs/DeleteJobModal";
 import { isAiConfigCancelledError } from "@/api/ai";
 import { listJobs } from "@/api/job";
@@ -62,12 +63,13 @@ export default function JobsPage() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-xl text-left text-sm">
+            <table className="w-full min-w-7xl text-left text-sm">
               <thead className="border-b border-zinc-200 bg-zinc-50 text-xs font-medium uppercase tracking-wide text-zinc-500">
                 <tr>
                   <th className="px-4 py-3 font-medium sm:px-5">Title</th>
                   <th className="px-4 py-3 font-medium sm:px-5">Location</th>
                   <th className="px-4 py-3 font-medium sm:px-5">Link</th>
+                  <th className="px-4 py-3 font-medium sm:px-5">Fit</th>
                   <th className="w-12 px-4 py-3 font-medium sm:px-5">
                     <span className="sr-only">Actions</span>
                   </th>
@@ -77,7 +79,7 @@ export default function JobsPage() {
                 {jobs === undefined ? (
                   <tr>
                     <td
-                      colSpan={4}
+                      colSpan={5}
                       className="px-4 py-10 text-center text-sm text-zinc-500 sm:px-5"
                     >
                       Loading…
@@ -86,7 +88,7 @@ export default function JobsPage() {
                 ) : jobs.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={4}
+                      colSpan={5}
                       className="px-4 py-10 text-center text-sm text-zinc-500 sm:px-5"
                     >
                       No applications yet. Click Apply to get started.
@@ -122,6 +124,9 @@ export default function JobsPage() {
                         ) : (
                           "—"
                         )}
+                      </td>
+                      <td className="px-4 py-3 sm:px-5">
+                        <CompatibilityScoreCell job={job} />
                       </td>
                       <td className="px-4 py-3 text-right sm:px-5">
                         <button

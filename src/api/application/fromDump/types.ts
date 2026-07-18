@@ -7,7 +7,7 @@ export type MasterFromDumpInput = {
   dataDump: string;
   /**
    * Current master profile. Used for `add` so the model can merge.
-   * Ignored for `replace`.
+   * Preference fields are always preserved from `current` when provided.
    */
   current?: UpsertProfileInput | null;
 };

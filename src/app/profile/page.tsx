@@ -34,7 +34,8 @@ export default function ProfilePage() {
     const payload = await masterFromDump({
       mode,
       dataDump,
-      current: mode === "add" ? formValuesToUpsertInput(current) : null,
+      // Always pass current so ideal-job preferences survive dump import.
+      current: formValuesToUpsertInput(current),
     });
     await upsertProfile(payload);
     const result = await readProfile();
@@ -50,6 +51,7 @@ export default function ProfilePage() {
       load={load}
       save={save}
       onMasterDump={handleMasterDump}
+      showIdealJobPreferences
     />
   );
 }

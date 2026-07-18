@@ -45,6 +45,10 @@ export function normalizeMasterProfile(
     },
     coverLetter: raw.coverLetter.replace(/\r\n/g, "\n").trim(),
     targetRoles: raw.targetRoles.map((r) => r.trim()).filter(Boolean),
+    idealJobDescription: "",
+    preferredLocationType: "any",
+    salaryMinExpectation: null,
+    preferredBenefitNames: [],
     experiences: raw.experiences.map((row) => {
       const current = Boolean(row.current);
       return {

@@ -13,8 +13,18 @@ import {
   toTextItems,
   type TextItem,
 } from "@/lib/textItem";
-import type { ProjectLink } from "@/types/db";
+import type { PreferredLocationType, ProjectLink } from "@/types/db";
 import type { ProfileBundle } from "@/types/profile";
+
+export const PREFERRED_LOCATION_TYPES: Array<{
+  value: PreferredLocationType;
+  label: string;
+}> = [
+  { value: "any", label: "Any" },
+  { value: "remote", label: "Remote" },
+  { value: "hybrid", label: "Hybrid" },
+  { value: "on_site", label: "On-site" },
+];
 
 export type ProjectLinkFormItem = ProjectLink;
 
@@ -93,6 +103,10 @@ export type ProfileFormValues = {
   };
   coverLetter: string;
   targetRoles: TextItem[];
+  idealJobDescription: string;
+  preferredLocationType: PreferredLocationType;
+  salaryMinExpectation: string;
+  preferredBenefitNames: string[];
   experiences: ExperienceFormItem[];
   projects: ProjectFormItem[];
   education: EducationFormItem[];
@@ -182,6 +196,10 @@ export const EMPTY_PROFILE_FORM: ProfileFormValues = {
   },
   coverLetter: "",
   targetRoles: [createTextItem()],
+  idealJobDescription: "",
+  preferredLocationType: "any",
+  salaryMinExpectation: "",
+  preferredBenefitNames: [],
   experiences: [],
   projects: [],
   education: [],
@@ -189,6 +207,25 @@ export const EMPTY_PROFILE_FORM: ProfileFormValues = {
   achievements: [],
   faqs: [],
 };
+
+function asPreferredLocationType(value: unknown): PreferredLocationType {
+  if (
+    value === "remote" ||
+    value === "hybrid" ||
+    value === "on_site" ||
+    value === "any"
+  ) {
+    return value;
+  }
+  return "any";
+}
+
+function parseOptionalSalary(value: string): number | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const n = Number(trimmed.replace(/[$,\s]/g, ""));
+  return Number.isFinite(n) ? n : null;
+}
 
 export function readResultToFormValues(
   result: ProfileReadResult,
@@ -209,6 +246,15 @@ export function readResultToFormValues(
     },
     coverLetter: result.application.coverLetter,
     targetRoles: toTextItems(result.targetRoles.map((r) => r.role)),
+    idealJobDescription: result.profile.idealJobDescription ?? "",
+    preferredLocationType: asPreferredLocationType(
+      result.profile.preferredLocationType,
+    ),
+    salaryMinExpectation:
+      result.profile.salaryMinExpectation != null
+        ? String(result.profile.salaryMinExpectation)
+        : "",
+    preferredBenefitNames: result.preferredBenefits.map((b) => b.name),
     experiences: result.application.experiences.map((e) => ({
       entityId: e.id,
       company: e.company,
@@ -296,6 +342,7 @@ export function jobResumeToFormValues(result: {
     profile: result.profile,
     contact: result.contact,
     targetRoles: result.targetRoles,
+    preferredBenefits: [],
     application: result.application,
   });
 }
@@ -323,6 +370,10 @@ export function formValuesToUpsertInput(
     },
     coverLetter: values.coverLetter,
     targetRoles: textItemsToStrings(values.targetRoles),
+    idealJobDescription: values.idealJobDescription,
+    preferredLocationType: values.preferredLocationType,
+    salaryMinExpectation: parseOptionalSalary(values.salaryMinExpectation),
+    preferredBenefitNames: values.preferredBenefitNames,
     experiences: values.experiences.map((e) => ({
       id: optionalId(e.entityId),
       company: e.company.trim(),

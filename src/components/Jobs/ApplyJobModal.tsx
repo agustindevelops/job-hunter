@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { isAiConfigCancelledError } from "@/api/ai";
-import { createJobFromApply } from "@/api/job";
+import { createJobFromApply, scoreCompatibility } from "@/api/job";
 import Button from "@/components/Button";
 import Modal from "@/components/Modal";
 import { fieldClassName, labelClassName } from "@/lib/formStyles";
@@ -36,6 +36,15 @@ export default function ApplyJobModal({ open, onClose }: ApplyJobModalProps) {
         link: values.url,
         dataDump: values.dataDump,
       });
+      try {
+        await scoreCompatibility(id);
+      } catch (scoreErr) {
+        if (isAiConfigCancelledError(scoreErr)) {
+          // Job already saved; continue without a fit score.
+        } else {
+          console.error("Compatibility scoring failed", scoreErr);
+        }
+      }
       reset();
       onClose();
       router.push(jobPath(id));
@@ -113,7 +122,7 @@ export default function ApplyJobModal({ open, onClose }: ApplyJobModalProps) {
             Cancel
           </Button>
           <Button type="submit" disabled={saving}>
-            {saving ? "Matching…" : "Continue"}
+            {saving ? "Scoring fit…" : "Continue"}
           </Button>
         </div>
       </form>

@@ -1,4 +1,5 @@
 import { generateAiText } from "@/api/ai";
+import { BENEFIT_TYPES } from "@/db/benefitTypes";
 import type { LocationType } from "@/types/db";
 
 /**
@@ -15,6 +16,8 @@ export type JobFromDumpFields = {
   maxYearsOfExperience: string;
   experienceLevel: string;
   body: string;
+  /** Benefit type `name` values from BENEFIT_TYPES present in the dump. */
+  benefitNames: string[];
 };
 
 const LOCATION_TYPES: LocationType[] = [
@@ -23,6 +26,9 @@ const LOCATION_TYPES: LocationType[] = [
   "on_site",
   "unknown",
 ];
+
+const BENEFIT_NAMES = BENEFIT_TYPES.map((b) => b.name);
+const BENEFIT_NAMES_SET = new Set<string>(BENEFIT_NAMES);
 
 const RESPONSE_SHAPE = `{
   "jobTitle": string,
@@ -33,7 +39,8 @@ const RESPONSE_SHAPE = `{
   "minYearsOfExperience": string,
   "maxYearsOfExperience": string,
   "experienceLevel": string,
-  "body": string
+  "body": string,
+  "benefitNames": string[]
 }`;
 
 function buildPrompt(dataDump: string): string {
@@ -49,7 +56,8 @@ Rules:
 - minYearsOfExperience / maxYearsOfExperience are short strings (e.g. "3", "5+") or "" if unknown.
 - experienceLevel is a short label (e.g. "Junior", "Mid", "Senior", "Staff") or "" if unknown.
 - body should be a cleaned, readable job description (markdown ok). Prefer the full description from the dump; do not invent sections.
-- Leave strings empty and salary null when the dump has nothing for that field.
+- benefitNames must be a subset of these exact names (include only benefits clearly offered): ${BENEFIT_NAMES.join(", ")}.
+- Leave strings empty, salary null, and benefitNames [] when the dump has nothing for that field.
 
 Data dump:
 ${dataDump}`;
@@ -79,6 +87,15 @@ function asLocationType(value: unknown): LocationType {
     : "unknown";
 }
 
+function asBenefitNames(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  const names = value
+    .filter((item): item is string => typeof item === "string")
+    .map((item) => item.trim())
+    .filter((item) => BENEFIT_NAMES_SET.has(item));
+  return [...new Set(names)];
+}
+
 function parseJsonObject(text: string): Record<string, unknown> {
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
@@ -102,6 +119,7 @@ function normalizeJobDump(raw: Record<string, unknown>): JobFromDumpFields {
     maxYearsOfExperience: asString(raw.maxYearsOfExperience).trim(),
     experienceLevel: asString(raw.experienceLevel).trim(),
     body: asString(raw.body).trim(),
+    benefitNames: asBenefitNames(raw.benefitNames),
   };
 }
 

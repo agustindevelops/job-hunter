@@ -1,11 +1,12 @@
 import { readApplicationTree, type ApplicationTree } from "@/api/application/_helpers";
 import { db } from "@/db";
-import type { Contact, ProfileRow, TargetRole } from "@/types/db";
+import type { BenefitType, Contact, ProfileRow, TargetRole } from "@/types/db";
 
 export type ProfileReadResult = {
   profile: ProfileRow;
   contact: Contact;
   targetRoles: TargetRole[];
+  preferredBenefits: BenefitType[];
   application: ApplicationTree;
 };
 
@@ -25,5 +26,15 @@ export async function readProfile(): Promise<ProfileReadResult | null> {
     .equals(profile.id)
     .toArray();
 
-  return { profile, contact, targetRoles, application };
+  const benefitLinks = await db.profileBenefits
+    .where("profileId")
+    .equals(profile.id)
+    .toArray();
+  const preferredBenefits = (
+    await db.benefitTypes.bulkGet(
+      benefitLinks.map((row) => row.benefitTypeId),
+    )
+  ).filter((b): b is BenefitType => b != null);
+
+  return { profile, contact, targetRoles, preferredBenefits, application };
 }

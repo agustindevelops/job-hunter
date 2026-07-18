@@ -1,5 +1,6 @@
 import { requireId } from "@/api/_requireId";
 import { jobFromDump } from "@/api/job/fromDump";
+import { syncJobBenefits } from "@/api/job/syncBenefits";
 import { db } from "@/db";
 import type { Job } from "@/types/db";
 
@@ -37,11 +38,22 @@ export async function createJobFromApply({
     maxYearsOfExperience: enriched.maxYearsOfExperience,
     experienceLevel: enriched.experienceLevel,
     jobTitle: enriched.jobTitle,
+    compatibilityScore: null,
+    compatibilityQualification: null,
+    compatibilityQualificationReason: "",
+    compatibilityPreference: null,
+    compatibilityPreferenceReason: "",
+    compatibilityCompensation: null,
+    compatibilityCompensationReason: "",
   };
 
-  const id = await db.jobs.add(row);
-  if (id === undefined) {
-    throw new Error("Failed to create job");
-  }
-  return id;
+  return db.transaction(
+    "rw",
+    [db.jobs, db.jobBenefits, db.benefitTypes],
+    async () => {
+      const jobId = requireId(await db.jobs.add(row), "job");
+      await syncJobBenefits(jobId, enriched.benefitNames);
+      return jobId;
+    },
+  );
 }

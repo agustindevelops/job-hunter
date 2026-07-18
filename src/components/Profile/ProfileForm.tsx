@@ -12,6 +12,7 @@ import {
   LinkListField,
   StringListField,
 } from "@/components/Profile/StringListField";
+import { BENEFIT_TYPES } from "@/db/benefitTypes";
 import {
   fieldClassName,
   growingTextareaClassName,
@@ -24,6 +25,7 @@ import {
   createEmptyFaq,
   createEmptyProject,
   createEmptySkillCategory,
+  PREFERRED_LOCATION_TYPES,
   type ProfileFormValues,
 } from "@/lib/profileForm";
 
@@ -31,6 +33,8 @@ type ProfileFormProps = {
   form: UseFormReturn<ProfileFormValues>;
   onSubmit: (values: ProfileFormValues) => void | Promise<void>;
   saving: boolean;
+  /** Ideal-job preferences — profile page only. */
+  showIdealJobPreferences?: boolean;
 };
 
 function Section({
@@ -334,8 +338,10 @@ export default function ProfileForm({
   form,
   onSubmit,
   saving,
+  showIdealJobPreferences = false,
 }: ProfileFormProps) {
-  const { register, control, handleSubmit } = form;
+  const { register, control, handleSubmit, watch, setValue } = form;
+  const preferredBenefitNames = watch("preferredBenefitNames");
 
   const experiences = useFieldArray({ control, name: "experiences" });
   const projects = useFieldArray({ control, name: "projects" });
@@ -385,6 +391,95 @@ export default function ProfileForm({
           placeholder="Full Stack Web Developer"
         />
       </Section>
+
+      {showIdealJobPreferences ? (
+        <Section
+          title="Ideal job"
+          description="What you want next — used to score job fit when you apply."
+        >
+          <div>
+            <label htmlFor="idealJobDescription" className={labelClassName}>
+              What does your ideal job consist of?
+            </label>
+            <textarea
+              id="idealJobDescription"
+              rows={4}
+              className={growingTextareaClassName}
+              placeholder="e.g. Senior full-stack role on a small product team, ownership of features end-to-end, mostly remote…"
+              {...register("idealJobDescription")}
+            />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label
+                htmlFor="preferredLocationType"
+                className={labelClassName}
+              >
+                Preferred location type
+              </label>
+              <select
+                id="preferredLocationType"
+                className={fieldClassName}
+                {...register("preferredLocationType")}
+              >
+                {PREFERRED_LOCATION_TYPES.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label
+                htmlFor="salaryMinExpectation"
+                className={labelClassName}
+              >
+                Minimum salary (annual USD)
+              </label>
+              <input
+                id="salaryMinExpectation"
+                type="number"
+                min={0}
+                step={1000}
+                className={fieldClassName}
+                placeholder="120000"
+                {...register("salaryMinExpectation")}
+              />
+            </div>
+          </div>
+          <div>
+            <p className={labelClassName}>Benefits you care about</p>
+            <div className="mt-1 grid gap-2 sm:grid-cols-2">
+              {BENEFIT_TYPES.map((benefit) => {
+                const checked = preferredBenefitNames.includes(benefit.name);
+                return (
+                  <label
+                    key={benefit.name}
+                    className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700"
+                  >
+                    <input
+                      type="checkbox"
+                      className="rounded border-zinc-300"
+                      checked={checked}
+                      onChange={() => {
+                        const next = checked
+                          ? preferredBenefitNames.filter(
+                              (name) => name !== benefit.name,
+                            )
+                          : [...preferredBenefitNames, benefit.name];
+                        setValue("preferredBenefitNames", next, {
+                          shouldDirty: true,
+                        });
+                      }}
+                    />
+                    {benefit.label}
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        </Section>
+      ) : null}
 
       <Section
         title="Experience"

@@ -12,6 +12,10 @@ export const fictionalCurrentProfile: UpsertProfileInput = {
   },
   coverLetter: "I focus on practical production systems.",
   targetRoles: ["Software Engineer", "Full-Stack Engineer"],
+  idealJobDescription: "",
+  preferredLocationType: "any",
+  salaryMinExpectation: null,
+  preferredBenefitNames: [],
   experiences: [
     {
       company: "Northwind Labs",

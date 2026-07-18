@@ -13,6 +13,7 @@ import type {
   Job,
   JobBenefit,
   JobTag,
+  ProfileBenefit,
   ProfileRow,
   ProjectRow,
   ProjectTag,
@@ -44,6 +45,7 @@ class JobHunterDB extends Dexie {
   jobs!: EntityTable<Job, "id">;
   jobTags!: EntityTable<JobTag, "id">;
   jobBenefits!: EntityTable<JobBenefit, "id">;
+  profileBenefits!: EntityTable<ProfileBenefit, "id">;
 
   constructor() {
     super("JobHunterDB");
@@ -124,6 +126,32 @@ class JobHunterDB extends Dexie {
           );
         }
       });
+
+    this.version(3).stores({
+      contacts: "++id, email",
+      profiles: "++id, contactId, applicationId",
+      applications: "++id, status",
+      targetRoles: "++id, profileId",
+      experiences: "++id, applicationId, company, startDate",
+      projects: "++id, applicationId, name",
+      education: "++id, applicationId, school",
+      skillCategories: "++id, applicationId, category",
+      achievements: "++id, applicationId",
+      faqs: "++id, applicationId",
+      tags: "++id, &name",
+      experienceTags: "++id, experienceId, tagId, [experienceId+tagId]",
+      projectTags: "++id, projectId, tagId, [projectId+tagId]",
+      educationTags: "++id, educationId, tagId, [educationId+tagId]",
+      skillCategoryTags:
+        "++id, skillCategoryId, tagId, [skillCategoryId+tagId]",
+      achievementTags: "++id, achievementId, tagId, [achievementId+tagId]",
+      benefitTypes: "++id, &name",
+      jobs: "++id, contactId, applicationId, locationType, jobTitle, experienceLevel",
+      jobTags: "++id, jobId, tagId, [jobId+tagId]",
+      jobBenefits: "++id, jobId, benefitTypeId, [jobId+benefitTypeId]",
+      profileBenefits:
+        "++id, profileId, benefitTypeId, [profileId+benefitTypeId]",
+    });
   }
 }
 

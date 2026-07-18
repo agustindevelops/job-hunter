@@ -10,7 +10,7 @@ import {
   type UpsertSkillCategoryInput,
 } from "@/api/application/upsert";
 import { db } from "@/db";
-import type { Contact } from "@/types/db";
+import type { Contact, PreferredLocationType } from "@/types/db";
 
 export type {
   UpsertAchievementInput,
@@ -29,6 +29,11 @@ export type UpsertProfileInput = {
   /** Free-form markdown blurb on the master application */
   coverLetter?: string;
   targetRoles: string[];
+  idealJobDescription: string;
+  preferredLocationType: PreferredLocationType;
+  salaryMinExpectation: number | null;
+  /** Benefit type names from BENEFIT_TYPES / benefitTypes.name */
+  preferredBenefitNames: string[];
   experiences: UpsertExperienceInput[];
   projects: UpsertProjectInput[];
   education: UpsertEducationInput[];
@@ -36,6 +41,26 @@ export type UpsertProfileInput = {
   achievements: UpsertAchievementInput[];
   faqs: UpsertFaqInput[];
 };
+
+async function syncPreferredBenefits(
+  profileId: number,
+  benefitNames: string[],
+): Promise<void> {
+  await db.profileBenefits.where("profileId").equals(profileId).delete();
+  const unique = [...new Set(benefitNames.map((n) => n.trim()).filter(Boolean))];
+  if (unique.length === 0) return;
+
+  const types = await db.benefitTypes.where("name").anyOf(unique).toArray();
+  const byName = new Map(types.map((t) => [t.name, t]));
+  for (const name of unique) {
+    const benefit = byName.get(name);
+    if (!benefit?.id) continue;
+    await db.profileBenefits.add({
+      profileId,
+      benefitTypeId: benefit.id,
+    });
+  }
+}
 
 /** Updates profile identity fields without touching the master application tree. */
 export async function upsertProfileIdentity(input: {
@@ -79,6 +104,8 @@ export async function upsertProfile(
       db.profiles,
       db.applications,
       db.targetRoles,
+      db.profileBenefits,
+      db.benefitTypes,
       db.experiences,
       db.projects,
       db.education,
@@ -97,6 +124,12 @@ export async function upsertProfile(
       let contactId: number;
       let applicationId: number;
       let profileId: number;
+
+      const preferenceFields = {
+        idealJobDescription: input.idealJobDescription.trim(),
+        preferredLocationType: input.preferredLocationType,
+        salaryMinExpectation: input.salaryMinExpectation,
+      };
 
       if (!profile?.id) {
         contactId = requireId(
@@ -117,6 +150,7 @@ export async function upsertProfile(
             fullName: input.fullName,
             headline: input.headline,
             summary: input.summary,
+            ...preferenceFields,
           }),
           "profile",
         );
@@ -130,6 +164,7 @@ export async function upsertProfile(
           fullName: input.fullName,
           headline: input.headline,
           summary: input.summary,
+          ...preferenceFields,
         });
       }
 
@@ -139,6 +174,8 @@ export async function upsertProfile(
         if (!trimmed) continue;
         await db.targetRoles.add({ profileId, role: trimmed });
       }
+
+      await syncPreferredBenefits(profileId, input.preferredBenefitNames);
 
       const content: UpsertApplicationInput = {
         coverLetter: input.coverLetter,

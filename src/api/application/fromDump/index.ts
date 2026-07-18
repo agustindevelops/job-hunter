@@ -71,6 +71,15 @@ export async function masterFromDump(
   }
 
   const normalized = normalizeMasterProfile(raw);
+  // Ideal-job preferences are profile settings, not resume dump content.
+  if (input.current) {
+    normalized.idealJobDescription = input.current.idealJobDescription;
+    normalized.preferredLocationType = input.current.preferredLocationType;
+    normalized.salaryMinExpectation = input.current.salaryMinExpectation;
+    normalized.preferredBenefitNames = [
+      ...input.current.preferredBenefitNames,
+    ];
+  }
   assertSafeMasterShape(input.mode, prior, normalized);
   return normalized;
 }

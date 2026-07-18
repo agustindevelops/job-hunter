@@ -16,6 +16,7 @@ import {
   readJobResume,
   updateJob,
 } from "@/api/job";
+import { syncJobBenefits } from "@/api/job/syncBenefits";
 import { upsertProfileIdentity } from "@/api/profile";
 import AppHeader from "@/components/AppHeader";
 import Button from "@/components/Button";
@@ -135,6 +136,7 @@ export default function JobPage({ params }: JobPageProps) {
         body: matched.body,
         dataDump,
       });
+      await syncJobBenefits(jobId, matched.benefitNames);
       await matchApplicationFromDump({
         jobId,
         dataDump,

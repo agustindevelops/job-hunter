@@ -75,6 +75,8 @@ type ResumeEditorProps = {
    * master profile via AI. Should return form values to apply after success.
    */
   onMasterDump?: (request: MasterDumpRequest) => Promise<ProfileFormValues>;
+  /** Show ideal-job preference fields (profile page). */
+  showIdealJobPreferences?: boolean;
 };
 
 export default function ResumeEditor({
@@ -86,6 +88,7 @@ export default function ResumeEditor({
   reloadKey,
   companyName,
   onMasterDump,
+  showIdealJobPreferences = false,
 }: ResumeEditorProps) {
   const [ready, setReady] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -392,7 +395,12 @@ export default function ResumeEditor({
               Unable to load resume.
             </div>
           ) : (
-            <ProfileForm form={form} onSubmit={handleSave} saving={saving} />
+            <ProfileForm
+              form={form}
+              onSubmit={handleSave}
+              saving={saving}
+              showIdealJobPreferences={showIdealJobPreferences}
+            />
           )}
         </div>
       )}
