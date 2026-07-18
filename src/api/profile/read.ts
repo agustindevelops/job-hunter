@@ -1,16 +1,18 @@
 import { readApplicationTree, type ApplicationTree } from "@/api/application/_helpers";
 import { db } from "@/db";
-import type { BenefitType, Contact, ProfileRow, TargetRole } from "@/types/db";
+import { DEFAULT_THEME_COLOR, normalizeThemeColor } from "@/lib/themeColor";
+import type { BenefitType, Contact, ProfileRow, TargetRole, Theme } from "@/types/db";
 
 export type ProfileReadResult = {
   profile: ProfileRow;
   contact: Contact;
   targetRoles: TargetRole[];
   preferredBenefits: BenefitType[];
+  theme: Theme;
   application: ApplicationTree;
 };
 
-/** Reads the single local profile with contact, target roles, and master application tree. */
+/** Reads the single local profile with contact, target roles, theme, and master application tree. */
 export async function readProfile(): Promise<ProfileReadResult | null> {
   const profile = await db.profiles.toCollection().first();
   if (!profile?.id || profile.applicationId == null) return null;
@@ -36,5 +38,30 @@ export async function readProfile(): Promise<ProfileReadResult | null> {
     )
   ).filter((b): b is BenefitType => b != null);
 
-  return { profile, contact, targetRoles, preferredBenefits, application };
+  let theme = await db.themes.where("profileId").equals(profile.id).first();
+  if (!theme) {
+    const id = await db.themes.add({
+      profileId: profile.id,
+      primaryColor: DEFAULT_THEME_COLOR,
+    });
+    theme = {
+      id,
+      profileId: profile.id,
+      primaryColor: DEFAULT_THEME_COLOR,
+    };
+  } else {
+    theme = {
+      ...theme,
+      primaryColor: normalizeThemeColor(theme.primaryColor),
+    };
+  }
+
+  return {
+    profile,
+    contact,
+    targetRoles,
+    preferredBenefits,
+    theme,
+    application,
+  };
 }

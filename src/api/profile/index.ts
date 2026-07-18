@@ -3,3 +3,8 @@ export type { ProfileReadResult } from "./read";
 export { upsertProfile, upsertProfileIdentity } from "./upsert";
 export type { UpsertProfileInput } from "./upsert";
 export { deleteProfile } from "./delete";
+export {
+  readTheme,
+  themeColorForProfile,
+  upsertTheme,
+} from "./theme";

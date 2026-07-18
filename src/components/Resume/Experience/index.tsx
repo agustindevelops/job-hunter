@@ -1,16 +1,23 @@
 import { Text, View } from "@react-pdf/renderer";
 import { Fragment } from "react";
+import { normalizeThemeColor } from "@/lib/themeColor";
 import type { Experience as ExperienceItem } from "@/types/profile";
 import Section from "../Section";
 import { formatDateRange } from "../utils";
-import { styles } from "./styles";
+import { createExperienceStyles } from "./styles";
 
 type ExperienceProps = {
   experience: ExperienceItem[];
+  themeColor?: string;
 };
 
-export default function Experience({ experience }: ExperienceProps) {
+export default function Experience({
+  experience,
+  themeColor,
+}: ExperienceProps) {
   if (!experience.length) return null;
+
+  const styles = createExperienceStyles(normalizeThemeColor(themeColor));
 
   return (
     <Section title="Professional Experience">

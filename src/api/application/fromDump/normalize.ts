@@ -1,4 +1,5 @@
 import type { UpsertProfileInput } from "@/api/profile";
+import { DEFAULT_THEME_COLOR } from "@/lib/themeColor";
 import { createLinkItem, createTextItem } from "@/lib/textItem";
 import type { MasterProfileResponse } from "./schema";
 import type { SerializedMasterProfile } from "./serialize";
@@ -48,6 +49,7 @@ export function normalizeMasterProfile(
     idealJobDescription: "",
     preferredLocationType: "any",
     salaryMinExpectation: null,
+    themeColor: DEFAULT_THEME_COLOR,
     preferredBenefitNames: [],
     experiences: raw.experiences.map((row) => {
       const current = Boolean(row.current);

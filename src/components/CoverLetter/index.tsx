@@ -49,11 +49,6 @@ export default function CoverLetter({
     profile.phone,
     formatLocation(profile),
   ].filter(Boolean) as string[];
-  const linkLines = [
-    profile.portfolioUrl,
-    profile.linkedinUrl,
-    profile.githubUrl,
-  ].filter(Boolean) as string[];
 
   return (
     <Document
@@ -64,11 +59,6 @@ export default function CoverLetter({
         <View style={styles.senderBlock}>
           <Text style={styles.senderName}>{profile.fullName}</Text>
           {contactLines.map((line) => (
-            <Text key={line} style={styles.senderLine}>
-              {line}
-            </Text>
-          ))}
-          {linkLines.map((line) => (
             <Text key={line} style={styles.senderLine}>
               {line}
             </Text>

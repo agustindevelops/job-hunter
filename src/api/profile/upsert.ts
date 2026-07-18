@@ -9,6 +9,7 @@ import {
   type UpsertProjectInput,
   type UpsertSkillCategoryInput,
 } from "@/api/application/upsert";
+import { upsertTheme } from "@/api/profile/theme";
 import { db } from "@/db";
 import type { Contact, PreferredLocationType } from "@/types/db";
 
@@ -32,6 +33,8 @@ export type UpsertProfileInput = {
   idealJobDescription: string;
   preferredLocationType: PreferredLocationType;
   salaryMinExpectation: number | null;
+  /** Resume PDF primary / accent color (`#RRGGBB`). */
+  themeColor: string;
   /** Benefit type names from BENEFIT_TYPES / benefitTypes.name */
   preferredBenefitNames: string[];
   experiences: UpsertExperienceInput[];
@@ -103,6 +106,7 @@ export async function upsertProfile(
       db.contacts,
       db.profiles,
       db.applications,
+      db.themes,
       db.targetRoles,
       db.profileBenefits,
       db.benefitTypes,
@@ -167,6 +171,8 @@ export async function upsertProfile(
           ...preferenceFields,
         });
       }
+
+      await upsertTheme(profileId, input.themeColor);
 
       await db.targetRoles.where("profileId").equals(profileId).delete();
       for (const role of input.targetRoles) {

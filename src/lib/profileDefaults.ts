@@ -1,3 +1,4 @@
+import { DEFAULT_THEME_COLOR } from "@/lib/themeColor";
 import type { ProfileBundle } from "@/types/profile";
 
 export const EMPTY_PROFILE_BUNDLE: ProfileBundle = {
@@ -13,6 +14,7 @@ export const EMPTY_PROFILE_BUNDLE: ProfileBundle = {
     portfolioUrl: "",
     linkedinUrl: "",
     githubUrl: "",
+    themeColor: DEFAULT_THEME_COLOR,
     tags: [],
   },
   targetRoles: [],

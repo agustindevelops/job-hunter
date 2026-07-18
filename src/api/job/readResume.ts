@@ -3,13 +3,15 @@ import {
   type ApplicationTree,
 } from "@/api/application/_helpers";
 import { db } from "@/db";
-import type { Contact, Job, ProfileRow, TargetRole } from "@/types/db";
+import { DEFAULT_THEME_COLOR, normalizeThemeColor } from "@/lib/themeColor";
+import type { Contact, Job, ProfileRow, TargetRole, Theme } from "@/types/db";
 
 export type JobResumeResult = {
   job: Job;
   profile: ProfileRow;
   contact: Contact;
   targetRoles: TargetRole[];
+  theme: Theme;
   /** Null when no tailored application exists yet — form should stay blank. */
   application: ApplicationTree | null;
 };
@@ -44,11 +46,30 @@ export async function readJobResume(
     .equals(profile.id)
     .toArray();
 
+  let theme = await db.themes.where("profileId").equals(profile.id).first();
+  if (!theme) {
+    const id = await db.themes.add({
+      profileId: profile.id,
+      primaryColor: DEFAULT_THEME_COLOR,
+    });
+    theme = {
+      id,
+      profileId: profile.id,
+      primaryColor: DEFAULT_THEME_COLOR,
+    };
+  } else {
+    theme = {
+      ...theme,
+      primaryColor: normalizeThemeColor(theme.primaryColor),
+    };
+  }
+
   return {
     job,
     profile,
     contact,
     targetRoles,
+    theme,
     application,
   };
 }

@@ -21,13 +21,16 @@ import type {
   SkillCategoryTag,
   Tag,
   TargetRole,
+  Theme,
 } from "@/types/db";
 import { BENEFIT_TYPES } from "./benefitTypes";
+import { DEFAULT_THEME_COLOR, normalizeThemeColor } from "@/lib/themeColor";
 
 class JobHunterDB extends Dexie {
   contacts!: EntityTable<Contact, "id">;
   profiles!: EntityTable<ProfileRow, "id">;
   applications!: EntityTable<ApplicationRow, "id">;
+  themes!: EntityTable<Theme, "id">;
   targetRoles!: EntityTable<TargetRole, "id">;
   experiences!: EntityTable<ExperienceRow, "id">;
   projects!: EntityTable<ProjectRow, "id">;
@@ -152,6 +155,96 @@ class JobHunterDB extends Dexie {
       profileBenefits:
         "++id, profileId, benefitTypeId, [profileId+benefitTypeId]",
     });
+
+    this.version(4)
+      .stores({
+        contacts: "++id, email",
+        profiles: "++id, contactId, applicationId",
+        applications: "++id, status",
+        themes: "++id, &profileId",
+        targetRoles: "++id, profileId",
+        experiences: "++id, applicationId, company, startDate",
+        projects: "++id, applicationId, name",
+        education: "++id, applicationId, school",
+        skillCategories: "++id, applicationId, category",
+        achievements: "++id, applicationId",
+        faqs: "++id, applicationId",
+        tags: "++id, &name",
+        experienceTags: "++id, experienceId, tagId, [experienceId+tagId]",
+        projectTags: "++id, projectId, tagId, [projectId+tagId]",
+        educationTags: "++id, educationId, tagId, [educationId+tagId]",
+        skillCategoryTags:
+          "++id, skillCategoryId, tagId, [skillCategoryId+tagId]",
+        achievementTags: "++id, achievementId, tagId, [achievementId+tagId]",
+        benefitTypes: "++id, &name",
+        jobs: "++id, contactId, applicationId, locationType, jobTitle, experienceLevel",
+        jobTags: "++id, jobId, tagId, [jobId+tagId]",
+        jobBenefits: "++id, jobId, benefitTypeId, [jobId+benefitTypeId]",
+        profileBenefits:
+          "++id, profileId, benefitTypeId, [profileId+benefitTypeId]",
+      })
+      .upgrade(async (tx) => {
+        const profiles = await tx.table("profiles").toArray();
+        const themes = tx.table("themes");
+        for (const profile of profiles) {
+          const row = profile as { id?: number; themeColor?: string };
+          if (row.id == null) continue;
+          const existing = await themes
+            .where("profileId")
+            .equals(row.id)
+            .first();
+          if (existing) continue;
+          await themes.add({
+            profileId: row.id,
+            primaryColor: normalizeThemeColor(
+              row.themeColor ?? DEFAULT_THEME_COLOR,
+            ),
+          });
+        }
+      });
+
+    // Restore original resume teal when the mistaken link-blue default was stored.
+    this.version(5)
+      .stores({
+        contacts: "++id, email",
+        profiles: "++id, contactId, applicationId",
+        applications: "++id, status",
+        themes: "++id, &profileId",
+        targetRoles: "++id, profileId",
+        experiences: "++id, applicationId, company, startDate",
+        projects: "++id, applicationId, name",
+        education: "++id, applicationId, school",
+        skillCategories: "++id, applicationId, category",
+        achievements: "++id, applicationId",
+        faqs: "++id, applicationId",
+        tags: "++id, &name",
+        experienceTags: "++id, experienceId, tagId, [experienceId+tagId]",
+        projectTags: "++id, projectId, tagId, [projectId+tagId]",
+        educationTags: "++id, educationId, tagId, [educationId+tagId]",
+        skillCategoryTags:
+          "++id, skillCategoryId, tagId, [skillCategoryId+tagId]",
+        achievementTags: "++id, achievementId, tagId, [achievementId+tagId]",
+        benefitTypes: "++id, &name",
+        jobs: "++id, contactId, applicationId, locationType, jobTitle, experienceLevel",
+        jobTags: "++id, jobId, tagId, [jobId+tagId]",
+        jobBenefits: "++id, jobId, benefitTypeId, [jobId+benefitTypeId]",
+        profileBenefits:
+          "++id, profileId, benefitTypeId, [profileId+benefitTypeId]",
+      })
+      .upgrade(async (tx) => {
+        const themes = tx.table("themes");
+        const rows = await themes.toArray();
+        for (const theme of rows) {
+          if (
+            theme.id != null &&
+            normalizeThemeColor(theme.primaryColor) === "#0563C1"
+          ) {
+            await themes.update(theme.id, {
+              primaryColor: DEFAULT_THEME_COLOR,
+            });
+          }
+        }
+      });
   }
 }
 

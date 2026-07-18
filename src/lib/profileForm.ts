@@ -13,6 +13,10 @@ import {
   toTextItems,
   type TextItem,
 } from "@/lib/textItem";
+import {
+  DEFAULT_THEME_COLOR,
+  normalizeThemeColor,
+} from "@/lib/themeColor";
 import type { PreferredLocationType, ProjectLink } from "@/types/db";
 import type { ProfileBundle } from "@/types/profile";
 
@@ -106,6 +110,8 @@ export type ProfileFormValues = {
   idealJobDescription: string;
   preferredLocationType: PreferredLocationType;
   salaryMinExpectation: string;
+  /** Resume PDF primary color (`#RRGGBB`). */
+  themeColor: string;
   preferredBenefitNames: string[];
   experiences: ExperienceFormItem[];
   projects: ProjectFormItem[];
@@ -199,6 +205,7 @@ export const EMPTY_PROFILE_FORM: ProfileFormValues = {
   idealJobDescription: "",
   preferredLocationType: "any",
   salaryMinExpectation: "",
+  themeColor: DEFAULT_THEME_COLOR,
   preferredBenefitNames: [],
   experiences: [],
   projects: [],
@@ -254,6 +261,7 @@ export function readResultToFormValues(
       result.profile.salaryMinExpectation != null
         ? String(result.profile.salaryMinExpectation)
         : "",
+    themeColor: normalizeThemeColor(result.theme.primaryColor),
     preferredBenefitNames: result.preferredBenefits.map((b) => b.name),
     experiences: result.application.experiences.map((e) => ({
       entityId: e.id,
@@ -316,6 +324,7 @@ export function jobResumeToFormValues(result: {
   profile: ProfileReadResult["profile"];
   contact: ProfileReadResult["contact"];
   targetRoles: ProfileReadResult["targetRoles"];
+  theme: ProfileReadResult["theme"];
   application: ProfileReadResult["application"] | null;
 }): ProfileFormValues {
   if (!result.application) {
@@ -324,6 +333,7 @@ export function jobResumeToFormValues(result: {
       fullName: result.profile.fullName,
       headline: result.profile.headline,
       summary: result.profile.summary,
+      themeColor: normalizeThemeColor(result.theme.primaryColor),
       contact: {
         phone: result.contact.phone ?? "",
         email: result.contact.email ?? "",
@@ -343,6 +353,7 @@ export function jobResumeToFormValues(result: {
     contact: result.contact,
     targetRoles: result.targetRoles,
     preferredBenefits: [],
+    theme: result.theme,
     application: result.application,
   });
 }
@@ -373,6 +384,7 @@ export function formValuesToUpsertInput(
     idealJobDescription: values.idealJobDescription,
     preferredLocationType: values.preferredLocationType,
     salaryMinExpectation: parseOptionalSalary(values.salaryMinExpectation),
+    themeColor: normalizeThemeColor(values.themeColor),
     preferredBenefitNames: values.preferredBenefitNames,
     experiences: values.experiences.map((e) => ({
       id: optionalId(e.entityId),
@@ -461,6 +473,7 @@ export function formValuesToProfileBundle(
       portfolioUrl: values.contact.portfolioUrl || undefined,
       linkedinUrl: values.contact.linkedinUrl || undefined,
       githubUrl: values.contact.githubUrl || undefined,
+      themeColor: normalizeThemeColor(values.themeColor),
     },
     targetRoles: textItemsToStrings(values.targetRoles),
     experience: values.experiences.map((e) => ({

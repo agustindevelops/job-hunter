@@ -20,8 +20,8 @@ export default function Resume({ data }: ResumeProps) {
       <Page size="LETTER" style={styles.page}>
         <Header profile={profile} />
         <Subheader profile={profile} />
-        <Experience experience={experience} />
-        <Projects projects={projects} />
+        <Experience experience={experience} themeColor={profile.themeColor} />
+        <Projects projects={projects} themeColor={profile.themeColor} />
         <Skills skills={skills} />
         <Education education={education} />
       </Page>

@@ -49,6 +49,14 @@ export type ProfileRow = {
   salaryMinExpectation?: number | null;
 };
 
+/** One theme per profile (resume PDF primary color). */
+export type Theme = {
+  id?: number;
+  profileId: number;
+  /** Resume PDF primary / accent color (`#RRGGBB`). */
+  primaryColor: string;
+};
+
 export type TargetRole = {
   id?: number;
   profileId: number;

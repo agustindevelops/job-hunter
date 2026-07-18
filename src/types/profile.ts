@@ -22,6 +22,8 @@ export type Profile = {
   portfolioUrl?: string;
   linkedinUrl?: string;
   githubUrl?: string;
+  /** Resume PDF primary / accent color (`#RRGGBB`). */
+  themeColor?: string;
   tags?: string[];
 };
 

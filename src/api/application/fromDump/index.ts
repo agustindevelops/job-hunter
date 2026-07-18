@@ -76,6 +76,7 @@ export async function masterFromDump(
     normalized.idealJobDescription = input.current.idealJobDescription;
     normalized.preferredLocationType = input.current.preferredLocationType;
     normalized.salaryMinExpectation = input.current.salaryMinExpectation;
+    normalized.themeColor = input.current.themeColor;
     normalized.preferredBenefitNames = [
       ...input.current.preferredBenefitNames,
     ];

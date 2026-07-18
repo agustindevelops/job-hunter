@@ -1,5 +1,6 @@
 import type { MasterProfileResponse } from "@/api/application/fromDump/schema";
 import type { UpsertProfileInput } from "@/api/profile";
+import { DEFAULT_THEME_COLOR } from "@/lib/themeColor";
 
 export const fictionalCurrentProfile: UpsertProfileInput = {
   fullName: "Alex Rivera",
@@ -15,6 +16,7 @@ export const fictionalCurrentProfile: UpsertProfileInput = {
   idealJobDescription: "",
   preferredLocationType: "any",
   salaryMinExpectation: null,
+  themeColor: DEFAULT_THEME_COLOR,
   preferredBenefitNames: [],
   experiences: [
     {

@@ -9,14 +9,18 @@ import AppHeader from "@/components/AppHeader";
 import Button from "@/components/Button";
 import DumpMasterModal from "@/components/Profile/DumpMasterModal";
 import ProfileForm from "@/components/Profile/ProfileForm";
+import ResumeThemeBar from "@/components/Profile/ResumeThemeBar";
 import CoverLetter from "@/components/CoverLetter";
 import Resume from "@/components/Resume";
+import { upsertTheme } from "@/api/profile";
+import { db } from "@/db";
 import { useAiConfig } from "@/context/AiConfigContext";
 import {
   EMPTY_PROFILE_FORM,
   formValuesToProfileBundle,
   type ProfileFormValues,
 } from "@/lib/profileForm";
+import { normalizeThemeColor } from "@/lib/themeColor";
 import { zipStoreFiles } from "@/lib/zipStore";
 
 const PDF_PREVIEW_DEBOUNCE_MS = 3000;
@@ -111,8 +115,9 @@ export default function ResumeEditor({
   const form = useForm<ProfileFormValues>({
     defaultValues: EMPTY_PROFILE_FORM,
   });
-  const { reset, control, getValues, handleSubmit } = form;
+  const { reset, control, getValues, handleSubmit, setValue, watch } = form;
   const watched = useWatch({ control });
+  const themeColor = watch("themeColor");
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -120,6 +125,24 @@ export default function ResumeEditor({
     }, PDF_PREVIEW_DEBOUNCE_MS);
     return () => window.clearTimeout(timer);
   }, [watched]);
+
+  async function handleThemeChange(color: string) {
+    const next = normalizeThemeColor(color);
+    setValue("themeColor", next, { shouldDirty: true });
+    setPreviewValues((prev) => ({ ...prev, themeColor: next }));
+    try {
+      const profile = await db.profiles.toCollection().first();
+      if (profile?.id != null) {
+        await upsertTheme(profile.id, next);
+      }
+    } catch (error) {
+      setSaveError(
+        error instanceof Error
+          ? error.message
+          : "Failed to save resume theme",
+      );
+    }
+  }
 
   const bundle = useMemo(
     () => formValuesToProfileBundle(previewValues),
@@ -341,41 +364,49 @@ export default function ResumeEditor({
         <div
           role="tabpanel"
           aria-labelledby="resume-tab-preview"
-          className="grid flex-1 grid-cols-1 gap-4 p-4 lg:grid-cols-2 sm:p-6"
+          className="flex flex-1 flex-col gap-4 p-4 sm:p-6"
         >
-          <div className="flex min-h-0 min-w-0 flex-col gap-2">
-            <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-              Resume
-            </p>
-            {ready ? (
-              <PDFViewer
-                showToolbar={false}
-                className="h-[calc(100vh-7rem)] w-full overflow-hidden rounded-md border border-zinc-300 bg-white shadow-sm"
-              >
-                {resumeDocument}
-              </PDFViewer>
-            ) : (
-              <div className="flex h-[calc(100vh-7rem)] w-full items-center justify-center rounded-md border border-zinc-300 bg-white text-sm text-zinc-500 shadow-sm">
-                Loading PDF preview…
-              </div>
-            )}
-          </div>
-          <div className="flex min-h-0 min-w-0 flex-col gap-2">
-            <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-              Cover letter
-            </p>
-            {ready ? (
-              <PDFViewer
-                showToolbar={false}
-                className="h-[calc(100vh-7rem)] w-full overflow-hidden rounded-md border border-zinc-300 bg-white shadow-sm"
-              >
-                {coverLetterDocument}
-              </PDFViewer>
-            ) : (
-              <div className="flex h-[calc(100vh-7rem)] w-full items-center justify-center rounded-md border border-zinc-300 bg-white text-sm text-zinc-500 shadow-sm">
-                Loading PDF preview…
-              </div>
-            )}
+          <ResumeThemeBar
+            value={themeColor ?? ""}
+            onChange={(color) => void handleThemeChange(color)}
+            disabled={loading || !!loadError}
+          />
+
+          <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
+            <div className="flex min-h-0 min-w-0 flex-col gap-2">
+              <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                Resume
+              </p>
+              {ready ? (
+                <PDFViewer
+                  showToolbar={false}
+                  className="h-[calc(100vh-14rem)] w-full overflow-hidden rounded-md border border-zinc-300 bg-white shadow-sm"
+                >
+                  {resumeDocument}
+                </PDFViewer>
+              ) : (
+                <div className="flex h-[calc(100vh-14rem)] w-full items-center justify-center rounded-md border border-zinc-300 bg-white text-sm text-zinc-500 shadow-sm">
+                  Loading PDF preview…
+                </div>
+              )}
+            </div>
+            <div className="flex min-h-0 min-w-0 flex-col gap-2">
+              <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                Cover letter
+              </p>
+              {ready ? (
+                <PDFViewer
+                  showToolbar={false}
+                  className="h-[calc(100vh-14rem)] w-full overflow-hidden rounded-md border border-zinc-300 bg-white shadow-sm"
+                >
+                  {coverLetterDocument}
+                </PDFViewer>
+              ) : (
+                <div className="flex h-[calc(100vh-14rem)] w-full items-center justify-center rounded-md border border-zinc-300 bg-white text-sm text-zinc-500 shadow-sm">
+                  Loading PDF preview…
+                </div>
+              )}
+            </div>
           </div>
         </div>
       ) : (

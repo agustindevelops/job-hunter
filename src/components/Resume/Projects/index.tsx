@@ -1,11 +1,13 @@
 import { Text, View } from "@react-pdf/renderer";
 import { Fragment } from "react";
+import { normalizeThemeColor } from "@/lib/themeColor";
 import type { Project } from "@/types/profile";
 import Section from "../Section";
-import { styles } from "./styles";
+import { createProjectStyles } from "./styles";
 
 type ProjectsProps = {
   projects: Project[];
+  themeColor?: string;
 };
 
 function formatProjectLinks(links: NonNullable<Project["links"]>): string {
@@ -15,8 +17,10 @@ function formatProjectLinks(links: NonNullable<Project["links"]>): string {
     .join(" · ");
 }
 
-export default function Projects({ projects }: ProjectsProps) {
+export default function Projects({ projects, themeColor }: ProjectsProps) {
   if (!projects.length) return null;
+
+  const styles = createProjectStyles(normalizeThemeColor(themeColor));
 
   return (
     <Section title="Projects">
