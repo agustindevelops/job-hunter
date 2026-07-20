@@ -14,6 +14,7 @@ import {
   buildExperienceEntityPrompt,
   buildProjectEntityPrompt,
   buildSkillsPrompt,
+  COVER_LETTER_SYSTEM_PROMPT,
   ENTITY_SYSTEM_PROMPT,
 } from "@/api/application/matchFromDump/prompt";
 import {
@@ -108,8 +109,12 @@ describe("segmented prompt builders", () => {
       assembledApplication: validTailoredResponse,
       master,
     });
+    expect(prompt).toContain("<<<MASTER_COVER_LETTER_START>>>");
     expect(prompt).toContain("<<<TAILORED_APPLICATION_START>>>");
     expect(prompt).toContain("<<<MASTER_APPLICATION_START>>>");
+    expect(prompt).toContain(master.coverLetter);
+    expect(COVER_LETTER_SYSTEM_PROMPT).toMatch(/exactly three paragraphs/i);
+    expect(COVER_LETTER_SYSTEM_PROMPT).toMatch(/Master blurb \(preserve\)/i);
   });
 
   it("entity system prompt requires omission and structure over prescription", () => {

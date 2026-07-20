@@ -202,9 +202,11 @@ function ContactFields({
         </label>
         <input
           id="portfolioUrl"
-          type="url"
+          type="text"
+          inputMode="url"
+          autoComplete="url"
           className={fieldClassName}
-          placeholder="https://yoursite.com"
+          placeholder="www.yoursite.com"
           {...register("contact.portfolioUrl")}
         />
       </div>
@@ -215,9 +217,11 @@ function ContactFields({
         </label>
         <input
           id="linkedinUrl"
-          type="url"
+          type="text"
+          inputMode="url"
+          autoComplete="url"
           className={fieldClassName}
-          placeholder="https://linkedin.com/in/you"
+          placeholder="www.linkedin.com/in/you"
           {...register("contact.linkedinUrl")}
         />
       </div>
@@ -228,9 +232,11 @@ function ContactFields({
         </label>
         <input
           id="githubUrl"
-          type="url"
+          type="text"
+          inputMode="url"
+          autoComplete="url"
           className={fieldClassName}
-          placeholder="https://github.com/you"
+          placeholder="www.github.com/you"
           {...register("contact.githubUrl")}
         />
       </div>

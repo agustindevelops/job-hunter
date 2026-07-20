@@ -362,6 +362,14 @@ function optionalId(value: number | undefined): number | undefined {
   return value != null && Number.isFinite(value) ? value : undefined;
 }
 
+/** Accept bare domains (e.g. www.linkedin.com/in/…) by adding https://. */
+export function normalizeOptionalUrl(value: string): string | undefined {
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
 export function formValuesToUpsertInput(
   values: ProfileFormValues,
 ): UpsertProfileInput {
@@ -375,9 +383,9 @@ export function formValuesToUpsertInput(
       city: values.contact.city.trim() || undefined,
       state: values.contact.state.trim() || undefined,
       zipcode: values.contact.zipcode.trim() || undefined,
-      portfolioUrl: values.contact.portfolioUrl.trim() || undefined,
-      linkedinUrl: values.contact.linkedinUrl.trim() || undefined,
-      githubUrl: values.contact.githubUrl.trim() || undefined,
+      portfolioUrl: normalizeOptionalUrl(values.contact.portfolioUrl),
+      linkedinUrl: normalizeOptionalUrl(values.contact.linkedinUrl),
+      githubUrl: normalizeOptionalUrl(values.contact.githubUrl),
     },
     coverLetter: values.coverLetter,
     targetRoles: textItemsToStrings(values.targetRoles),
@@ -470,9 +478,9 @@ export function formValuesToProfileBundle(
       city: values.contact.city || undefined,
       state: values.contact.state || undefined,
       zipcode: values.contact.zipcode || undefined,
-      portfolioUrl: values.contact.portfolioUrl || undefined,
-      linkedinUrl: values.contact.linkedinUrl || undefined,
-      githubUrl: values.contact.githubUrl || undefined,
+      portfolioUrl: normalizeOptionalUrl(values.contact.portfolioUrl),
+      linkedinUrl: normalizeOptionalUrl(values.contact.linkedinUrl),
+      githubUrl: normalizeOptionalUrl(values.contact.githubUrl),
       themeColor: normalizeThemeColor(values.themeColor),
     },
     targetRoles: textItemsToStrings(values.targetRoles),

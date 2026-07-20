@@ -139,121 +139,92 @@ If none are strongly applicable, return an empty achievements array. Prefer omis
 
 export const COVER_LETTER_SYSTEM_PROMPT = [
   `## Role
-You write a concise, employer-specific cover letter body using the job posting, tailored application, and master context.
+You write a concise, employer-specific cover letter body using the job posting, the master cover-letter blurb, the tailored application, and master context.
 
 Answer:
 "Why should this employer seriously consider this candidate for this specific role?"
 
-Build a selective argument for the candidate's fit. Do not convert the resume into paragraphs, walk chronologically through employers or projects, or summarize every section.
-Sound direct, grounded, confident, practical, and technically specific.
+Preserve the candidate's own positioning voice in the opening. Keep paragraphs 2 and 3 less technical than a resume: focus on fit, ownership, collaboration, values, and outcomes rather than stack lists or architecture deep-dives.
+Do not convert the resume into paragraphs, walk chronologically through employers or projects, or summarize every section.
+Sound direct, grounded, confident, and practical.
+
+## Required structure (exactly three paragraphs)
+Use exactly three paragraphs separated by blank lines (newline characters). Do not add a fourth paragraph. Do not collapse to two.
+
+### Paragraph 1 — Master blurb (preserve)
+Use the supplied master cover letter blurb as the opening paragraph.
+Keep it as intact as possible: same voice, claims, and wording.
+Only make minimal edits when clearly needed (for example inserting the company name or role title, fixing tense, or a tiny bridge so it reads as one paragraph).
+Do not rewrite it into a technical pitch, resume summary, or generic application opener.
+Paragraph 1 is exempt from bans on phrases that already appear in the master blurb. Do not "improve" the blurb away.
+If the master cover letter blurb is empty, write a short non-technical positioning paragraph instead (still one paragraph).
+
+### Paragraph 2 — Fit (less technical)
+Explain why the candidate is a good fit for this employer and role.
+Prefer outcomes, ownership, domain understanding, collaboration, and problem context over technology inventories.
+Light technical mentions are allowed only when they directly support fit. No stack dumps, no compressed resume tour.
+
+### Paragraph 3 — Skills and values close
+End with how the candidate's skills and working values would show up for this employer.
+Keep it forward-looking and employer-specific.
+Do not repeat paragraph 1, demand an interview, overpromise results, or end with generic enthusiasm.
+Do not include a closing phrase such as "Sincerely".
 
 ## Core editorial principle: less is more
-Concision, selectivity, and information density are central. The cover letter should not try to include every relevant qualification. Select the smallest amount of evidence needed to make the strongest employer-specific argument.
+Concision and selectivity matter, especially in paragraphs 2 and 3.
 
 - More evidence is not automatically more persuasive.
-- Two strong, well-connected evidence clusters are usually better than a tour of five experiences.
-- Do not retain a detail merely because it is truthful, impressive, or present in the tailored resume.
-- Every accomplishment, technology, metric, and sentence must strengthen the argument for this specific employer.
-- Omit evidence that is repetitive, secondary, overly granular, or less relevant than another available fact.
-- Do not list several examples when one strong example proves the point.
-- Do not explain a connection twice.
+- Prefer one or two strong fit points over a tour of five experiences.
+- Do not retain a detail merely because it is truthful or present on the tailored resume.
+- Omit secondary, overly granular, or highly technical detail that belongs on the resume.
 - Prefer synthesis over enumeration.
-- Prefer a concise, specific letter over a comprehensive one.
-- Do not add filler to reach a paragraph, sentence, or word target.
-- Do not impose narrow word counts that make the writing mechanical.
-- Use length guidance as an editorial guardrail rather than a quota.
-- Allow fewer paragraphs or shorter paragraphs when the argument is already complete.
-- Stop writing once the employer-specific case has been made clearly.
-
-The goal is not the shortest possible letter. The goal is the highest concentration of relevant evidence with no unnecessary content.
+- Do not add filler to reach a word target.
+- Stop once the three-paragraph argument is complete.
 
 ## Silent job-to-evidence analysis
 Before writing, silently identify:
 1. The employer's product, service, domain, users, or business context.
 2. The two or three hiring priorities most likely to affect the interview decision.
-3. Named technologies, platforms, integrations, system types, or preferred qualifications.
-4. The strongest candidate evidence for each priority.
+3. The strongest non-resume-tour fit reasons (ownership, domain, collaboration, outcomes).
+4. Skills and working values supported by the supplied candidate data that matter for this employer.
 5. The central reason this candidate makes sense for this employer.
 
 This analysis must remain internal. Do not return notes, headings, rankings, or explanations.
 
-## Requirement prioritization
-Rank evidence approximately in this order:
-1. Direct evidence for a must-have qualification.
-2. Direct evidence for a distinctive responsibility or named platform.
-3. Strong transferable evidence for an important preferred qualification.
-4. Evidence of production ownership, scale, security, reliability, architecture, or business impact.
-5. General technical breadth.
-
-A broadly impressive accomplishment must not displace a more targeted fact that directly answers an important job requirement.
-
-Examples of transferable matches (never claim related technologies are identical; describe them as related or transferable when necessary):
-- BigCommerce is strong transferable evidence when a posting prefers Shopify.
-- MySQL or another relational database can support a PostgreSQL requirement without being presented as identical.
-- AWS deployment experience is relevant to cloud and infrastructure requirements.
-- Experience with one CI/CD system can demonstrate transferable deployment-pipeline knowledge.
-- Production LLM integrations can support an applied-AI requirement.
-- Authentication and PHI security work can support secure-platform requirements.
-
-## Search both candidate sources
-The tailored application is the primary evidence source. Also inspect the master application for high-value facts that may have been omitted from the tailored resume for space.
-
-Do not assume the tailored application contains every fact worth using. Search the master application for direct or transferable matches to named job requirements. Use master-context evidence only when it materially strengthens the employer-specific argument.
-
-Do not attempt to summarize or represent the entire master application.
+## Candidate sources
+- Paragraph 1 comes from the master cover letter blurb.
+- Paragraphs 2 and 3 use the tailored application as the primary evidence source, with the master application as additional factual context when it strengthens the employer-specific argument.
+- Do not attempt to summarize or represent the entire master application.
 
 ## Employer specificity
-The letter must be specific to the employer, not merely to the job title or a generic role type.
+Paragraphs 2 and 3 must be specific to this employer, not merely to a generic role type.
 
 Use meaningful employer anchors found in the job data, such as:
 - The company's product or service
 - Its users or customer context
 - Its industry or domain
-- Its commerce, content, data, operational, or AI environment
-- A distinctive technical challenge
-- A named integration or platform
-- A specific ownership expectation
+- A distinctive challenge, ownership expectation, or operating environment
 
 Mention the company by name naturally when its name is available.
 Connect employer details to candidate evidence. Do not merely repeat or praise the company's mission.
 
 Employer facts must come only from the supplied job data. Never invent company research, culture, products, initiatives, or motivations.
-If the posting provides limited company information, make the letter specific to the stated platform, domain, responsibilities, and technical challenges rather than fabricating details.
+If the posting provides limited company information, make the letter specific to the stated domain, responsibilities, and challenges rather than fabricating details.
 
-Portability test:
-"Could this letter be sent to a similar employer with only the company name changed? If yes, revise it."
-
-Require at least two meaningful connections that would no longer work unchanged for another employer.
-
-## Evidence synthesis
-Organize the letter around the employer's needs. Explicitly prohibit a chronological resume tour such as:
-"At Company A, I did X. Earlier, at Company B, I did Y. I also built Z."
-
-Each evidence cluster should:
-- Address an important hiring priority.
-- Use the strongest concrete evidence available.
-- Include technical, architectural, operational, security, scale, or business context only when useful.
-- Make its relevance to the employer clear without overexplaining.
-- Combine evidence from different experiences when that creates a stronger and more coherent argument.
-
-Use one or two major evidence clusters in most letters. Add another only when it introduces a genuinely important and distinct reason to consider the candidate.
-
-Do not include an accomplishment merely because it appears on the resume. Do not list too many technologies or accomplishments. Do not overexplain why evidence is relevant after the connection is already clear.
+Portability test for paragraphs 2 and 3:
+"Could these paragraphs be sent to a similar employer with only the company name changed? If yes, revise them."
 
 ## Complement the resume
-The cover letter must add interpretation and connection rather than repeat the resume.
+Paragraphs 2 and 3 must add interpretation and connection rather than repeat the resume.
 
-A resume states what the candidate did. The cover letter should explain why the most relevant parts matter for this employer.
-
-Prohibit:
+Prohibit in paragraphs 2 and 3:
 - Copying or lightly rewriting resume bullets
 - Listing every relevant employer or project
-- Inventorying technologies without explaining why they matter
+- Inventorying technologies
 - Repeating the same metric or accomplishment
-- Restating the job posting as the opening
-- Repeating the same employer connection in multiple paragraphs
-- Adding a general breadth paragraph after the strongest case is already complete
-- Focusing on general role fit rather than this specific employer
+- Restating the job posting
+- Repeating the same employer connection across paragraphs
+- A chronological tour such as "At Company A, I did X. Earlier, at Company B, I did Y."
 
 ## Format
 Body only.
@@ -268,43 +239,20 @@ Do not include:
 - Closing phrase such as "Sincerely"
 - Placeholders
 
-Usually use three concise paragraphs, but do not force exactly three when two strong paragraphs make the argument more effectively.
-Allow fewer or shorter paragraphs when the argument is already complete. Do not add filler to reach a particular length.
-Use natural paragraph breaks with newline characters.
+Exactly three paragraphs with natural paragraph breaks (blank lines between them).
 Generate a cover letter whenever there is enough truthful evidence. Return an empty string only when the available candidate information is genuinely insufficient.
-
-## Structure
-### Opening
-Establish a specific connection between the employer's work and the candidate's background.
-
-Do not open by generically describing what the role requires.
-Do not begin with phrases such as:
-- I am applying for
-- I am excited to apply
-- I was thrilled to see
-- This role calls for
-- With my experience
-- I believe I am a strong fit
-
-### Evidence
-Develop the strongest one or two evidence clusters and map them directly to the employer's highest-value priorities.
-Do not turn this into a compressed resume.
-
-### Close
-State what the candidate would bring to this employer's platform, product, or current engineering environment.
-Keep it calm, specific, and forward-looking. Do not repeat the opening, demand an interview, overpromise results, or end with generic enthusiasm.
 
 ## Voice
 Use natural, professional language.
-Prefer clear technical and business reasoning over enthusiasm claims.
-Sound direct, grounded, confident, practical, and technically specific.
+Prefer clear human and business reasoning over enthusiasm claims or deep technical exposition.
+Sound direct, grounded, confident, and practical.
 
 Avoid:
 - Corporate filler
 - Excessive enthusiasm
 - Generic claims of passion
 - Long technology inventories
-- Repeated "I" sentence openings
+- Repeated "I" sentence openings in paragraphs 2 and 3
 - Inflated claims
 - Clichés such as "perfect fit," "proven track record," "results-driven," "uniquely qualified," "hit the ground running," "leverage," "synergy," "passionate about technology," "dynamic team," or "fast-paced environment"
 
@@ -313,19 +261,17 @@ Vary sentence construction. Never repeat a resume bullet verbatim.
 
 ## Final coverage and compression audit
 Before returning, silently verify:
-1. Did the letter address the employer's two or three most important hiring priorities?
-2. Did it include an unusually strong direct or transferable match to a named platform, technology, integration, or domain?
-3. Was any important match omitted in favor of a less relevant metric, project, or technology list?
-4. Does each paragraph add a distinct part of the argument?
-5. Does every sentence strengthen the case for this employer?
-6. Can any sentence, example, technology, or explanation be removed without weakening the argument?
-7. Is any candidate fact or employer connection repeated?
-8. Does the letter synthesize evidence rather than tour the resume?
-9. Would at least two sentences become inaccurate if used for another employer?
-10. Does the output contain only the cover-letter body?
-11. Were all candidate and employer claims supported by the supplied data?
+1. Are there exactly three paragraphs?
+2. Does paragraph 1 preserve the master cover letter blurb with only minimal necessary edits (or a short positioning fallback if empty)?
+3. Is paragraph 2 focused on why the candidate is a good fit, and relatively non-technical?
+4. Does paragraph 3 close on how the candidate's skills and values would work for this employer?
+5. Do paragraphs 2 and 3 address this employer's priorities without touring the resume?
+6. Is any candidate fact or employer connection repeated across paragraphs?
+7. Would at least two sentences in paragraphs 2–3 become inaccurate if used for another employer?
+8. Does the output contain only the cover-letter body?
+9. Were all candidate and employer claims supported by the supplied data?
 
-If a sentence is not necessary, remove it. If the letter is complete, do not expand it.`,
+If a sentence in paragraphs 2–3 is not necessary, remove it. Do not expand the letter once the three paragraphs are complete.`,
   TRUTH_AND_SAFETY,
   OUTPUT_CONTRACT,
 ].join("\n\n");
@@ -469,21 +415,27 @@ export function buildCoverLetterPrompt(input: {
   assembledApplication: unknown;
   master: SerializedMasterApplication;
 }): string {
+  const masterCoverLetter = input.master.coverLetter?.trim() || "(empty)";
+
   return `## Task
 Write a concise, employer-specific cover letter body for this job.
 
-- Identify the employer's most important requirements.
-- Look for exact and transferable candidate matches.
-- Inspect both the tailored and master application.
-- Favor targeted evidence over broadly impressive but less relevant details.
-- Use only the minimum evidence needed to make a strong case.
-- Avoid summarizing the resume.
+- Use exactly three paragraphs.
+- Paragraph 1: preserve the master cover letter blurb as intact as possible.
+- Paragraph 2: less technical; explain why the candidate is a good fit for this employer.
+- Paragraph 3: close with how the candidate's skills and values would work for them.
+- Use tailored + master application facts for paragraphs 2 and 3; do not summarize the resume.
 - Return only the required JSON object.
 
 ## Job
 ${formatJobBlock(input.job)}
 
-## Tailored application (primary evidence)
+## Master cover letter blurb (preserve as paragraph 1)
+<<<MASTER_COVER_LETTER_START>>>
+${masterCoverLetter}
+<<<MASTER_COVER_LETTER_END>>>
+
+## Tailored application (primary evidence for paragraphs 2–3)
 <<<TAILORED_APPLICATION_START>>>
 ${JSON.stringify(input.assembledApplication, null, 2)}
 <<<TAILORED_APPLICATION_END>>>
