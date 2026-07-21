@@ -245,6 +245,45 @@ class JobHunterDB extends Dexie {
           }
         }
       });
+
+    // Employer/company name on job postings (PDF filenames, cover letter).
+    this.version(6)
+      .stores({
+        contacts: "++id, email",
+        profiles: "++id, contactId, applicationId",
+        applications: "++id, status",
+        themes: "++id, &profileId",
+        targetRoles: "++id, profileId",
+        experiences: "++id, applicationId, company, startDate",
+        projects: "++id, applicationId, name",
+        education: "++id, applicationId, school",
+        skillCategories: "++id, applicationId, category",
+        achievements: "++id, applicationId",
+        faqs: "++id, applicationId",
+        tags: "++id, &name",
+        experienceTags: "++id, experienceId, tagId, [experienceId+tagId]",
+        projectTags: "++id, projectId, tagId, [projectId+tagId]",
+        educationTags: "++id, educationId, tagId, [educationId+tagId]",
+        skillCategoryTags:
+          "++id, skillCategoryId, tagId, [skillCategoryId+tagId]",
+        achievementTags: "++id, achievementId, tagId, [achievementId+tagId]",
+        benefitTypes: "++id, &name",
+        jobs: "++id, contactId, applicationId, company, locationType, jobTitle, experienceLevel",
+        jobTags: "++id, jobId, tagId, [jobId+tagId]",
+        jobBenefits: "++id, jobId, benefitTypeId, [jobId+benefitTypeId]",
+        profileBenefits:
+          "++id, profileId, benefitTypeId, [profileId+benefitTypeId]",
+      })
+      .upgrade(async (tx) => {
+        const jobs = tx.table("jobs");
+        const rows = await jobs.toArray();
+        for (const job of rows) {
+          const row = job as { id?: number; company?: string };
+          if (row.id == null) continue;
+          if (typeof row.company === "string") continue;
+          await jobs.update(row.id, { company: "" });
+        }
+      });
   }
 }
 

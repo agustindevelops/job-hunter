@@ -28,7 +28,6 @@ import {
   jobResumeToFormValues,
   type ProfileFormValues,
 } from "@/lib/profileForm";
-import { guessCompanyName } from "@/lib/guessCompanyName";
 import { JOBS_PATH } from "@/lib/site";
 
 type JobPageProps = {
@@ -126,6 +125,7 @@ export default function JobPage({ params }: JobPageProps) {
       await updateJob(jobId, {
         link: job.link,
         jobTitle: matched.jobTitle,
+        company: matched.company || job.company || "",
         location: matched.location,
         locationType: matched.locationType,
         salaryMin: matched.salaryMin,
@@ -191,11 +191,7 @@ export default function JobPage({ params }: JobPageProps) {
   return (
     <ResumeEditor
       reloadKey={`${jobId}-${resumeKey}`}
-      companyName={guessCompanyName({
-        jobTitle: jobResult.job.jobTitle,
-        body: jobResult.job.body,
-        dataDump: jobResult.job.dataDump,
-      })}
+      companyName={jobResult.job.company?.trim() || undefined}
       toolbarActions={
         <>
           <Button

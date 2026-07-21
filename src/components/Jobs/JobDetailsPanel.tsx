@@ -11,6 +11,7 @@ import {
   labelClassName,
 } from "@/lib/formStyles";
 import type { LocationType } from "@/types/db";
+import { formatSalaryRange } from "@/lib/formatSalary";
 
 const LOCATION_TYPES: { value: LocationType; label: string }[] = [
   { value: "remote", label: "Remote" },
@@ -21,6 +22,7 @@ const LOCATION_TYPES: { value: LocationType; label: string }[] = [
 
 type JobDetailsFormValues = {
   jobTitle: string;
+  company: string;
   link: string;
   location: string;
   locationType: LocationType;
@@ -36,6 +38,7 @@ type JobDetailsFormValues = {
 function toFormValues(job: JobReadResult["job"]): JobDetailsFormValues {
   return {
     jobTitle: job.jobTitle ?? "",
+    company: job.company ?? "",
     link: job.link ?? "",
     location: job.location ?? "",
     locationType: job.locationType ?? "unknown",
@@ -54,19 +57,6 @@ function parseOptionalNumber(value: string): number | null {
   if (!trimmed) return null;
   const n = Number(trimmed);
   return Number.isFinite(n) ? n : null;
-}
-
-function formatSalary(min: number | null, max: number | null): string {
-  if (min == null && max == null) return "—";
-  const fmt = (n: number) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 0,
-    }).format(n);
-  if (min != null && max != null) return `${fmt(min)} – ${fmt(max)}`;
-  if (min != null) return `From ${fmt(min)}`;
-  return `Up to ${fmt(max!)}`;
 }
 
 function locationLabel(type: LocationType): string {
@@ -103,6 +93,7 @@ export default function JobDetailsPanel({
     try {
       const input: UpdateJobInput = {
         jobTitle: values.jobTitle,
+        company: values.company,
         link: values.link,
         location: values.location,
         locationType: values.locationType,
@@ -132,6 +123,7 @@ export default function JobDetailsPanel({
 
   const { job, tags, benefits } = result;
   const title = job.jobTitle.trim() || "Untitled job";
+  const company = job.company?.trim() || "";
   const experience =
     [job.minYearsOfExperience, job.maxYearsOfExperience]
       .filter(Boolean)
@@ -145,9 +137,14 @@ export default function JobDetailsPanel({
             Job details
           </p>
           {!editing ? (
-            <h2 className="mt-1 text-base font-semibold wrap-break-word text-zinc-900">
-              {title}
-            </h2>
+            <>
+              <h2 className="mt-1 text-base font-semibold wrap-break-word text-zinc-900">
+                {title}
+              </h2>
+              {company ? (
+                <p className="mt-0.5 text-sm text-zinc-600">{company}</p>
+              ) : null}
+            </>
           ) : (
             <h2 className="mt-1 text-base font-semibold text-zinc-900">
               Edit job
@@ -197,15 +194,28 @@ export default function JobDetailsPanel({
           className="flex flex-col gap-4 px-4 py-4 sm:px-5"
           onSubmit={handleSubmit(onSave)}
         >
-          <div>
-            <label className={labelClassName} htmlFor="jobTitle">
-              Job title
-            </label>
-            <input
-              id="jobTitle"
-              className={fieldClassName}
-              {...register("jobTitle")}
-            />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className={labelClassName} htmlFor="jobTitle">
+                Job title
+              </label>
+              <input
+                id="jobTitle"
+                className={fieldClassName}
+                {...register("jobTitle")}
+              />
+            </div>
+            <div>
+              <label className={labelClassName} htmlFor="jobCompany">
+                Company
+              </label>
+              <input
+                id="jobCompany"
+                className={fieldClassName}
+                placeholder="Employer name"
+                {...register("company")}
+              />
+            </div>
           </div>
           <div>
             <label className={labelClassName} htmlFor="jobLink">
@@ -335,6 +345,12 @@ export default function JobDetailsPanel({
         <div className="flex flex-col gap-4 px-4 py-4 sm:px-5">
           <dl className="grid gap-3 sm:grid-cols-2">
             <div>
+              <dt className="text-xs font-medium text-zinc-500">Company</dt>
+              <dd className="mt-0.5 text-sm text-zinc-900">
+                {company || "—"}
+              </dd>
+            </div>
+            <div>
               <dt className="text-xs font-medium text-zinc-500">Location</dt>
               <dd className="mt-0.5 text-sm text-zinc-900">
                 {job.location.trim() || "—"}
@@ -347,7 +363,7 @@ export default function JobDetailsPanel({
             <div>
               <dt className="text-xs font-medium text-zinc-500">Salary</dt>
               <dd className="mt-0.5 text-sm text-zinc-900">
-                {formatSalary(job.salaryMin, job.salaryMax)}
+                {formatSalaryRange(job.salaryMin, job.salaryMax)}
               </dd>
             </div>
             <div>

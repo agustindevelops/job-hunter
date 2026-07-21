@@ -8,9 +8,9 @@ import Modal from "@/components/Modal";
 import { useAiConfig } from "@/context/AiConfigContext";
 import {
   AI_MODELS,
-  getDefaultModelOption,
   getModelOption,
 } from "@/lib/aiModels";
+import { getStartingModelOption } from "@/lib/aiEnvConfig";
 import { fieldClassName, labelClassName } from "@/lib/formStyles";
 import { API_KEYS_GUIDE_PATH } from "@/lib/site";
 import type { AiConfig } from "@/types/ai";
@@ -29,7 +29,7 @@ function maskApiKey(key: string) {
   return `••••••••••••${key.slice(-4)}`;
 }
 
-const defaultModel = getDefaultModelOption();
+const defaultModel = getStartingModelOption();
 
 export default function ApiKeyModal({
   open,
@@ -53,13 +53,14 @@ export default function ApiKeyModal({
 
   useEffect(() => {
     if (!open) return;
+    const starting = getStartingModelOption();
     const option = config
       ? (getModelOption(config.model) ?? {
           id: config.model,
           provider: config.provider,
           baseUrl: config.baseUrl,
         })
-      : defaultModel;
+      : starting;
     reset({
       apiKey: "",
       model: option.id,
@@ -116,9 +117,21 @@ export default function ApiKeyModal({
         <>
           <p>
             Your API key, model, and endpoint are kept only in this browser
-            tab’s memory. They are never written to a server, disk, or
-            IndexedDB. Closing or refreshing the page clears them so a leaked
-            backup or shared device cannot expose your credentials.
+            tab’s memory. They are never written to IndexedDB. Closing or
+            refreshing the page clears session overrides. For local
+            development you can seed defaults with{" "}
+            <code className="rounded bg-zinc-100 px-1 py-0.5 text-[0.85em]">
+              NEXT_PUBLIC_AI_API_KEY
+            </code>{" "}
+            and{" "}
+            <code className="rounded bg-zinc-100 px-1 py-0.5 text-[0.85em]">
+              NEXT_PUBLIC_AI_MODEL
+            </code>{" "}
+            in{" "}
+            <code className="rounded bg-zinc-100 px-1 py-0.5 text-[0.85em]">
+              .env.local
+            </code>
+            .
           </p>
           <p className="mt-2">
             <Link
@@ -150,6 +163,9 @@ export default function ApiKeyModal({
             value={selectedModelId}
             onChange={(event) => handleModelChange(event.target.value)}
           >
+            {AI_MODELS.some((option) => option.id === selectedModelId) ? null : (
+              <option value={selectedModelId}>{selectedModelId}</option>
+            )}
             {AI_MODELS.map((option) => (
               <option key={option.id} value={option.id}>
                 {option.label}

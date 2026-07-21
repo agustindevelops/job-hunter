@@ -401,7 +401,7 @@ export default function ProfileForm({
       {showIdealJobPreferences ? (
         <Section
           title="Ideal job"
-          description="What you want next — used to score job fit when you apply."
+          description="What you want next — used to score job fit when you apply. List alternatives you’re happy with; matching any one counts as a strong preference fit."
         >
           <div>
             <label htmlFor="idealJobDescription" className={labelClassName}>

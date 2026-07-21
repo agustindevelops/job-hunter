@@ -21,9 +21,10 @@ import {
   type ProfileFormValues,
 } from "@/lib/profileForm";
 import { normalizeThemeColor } from "@/lib/themeColor";
-import { zipStoreFiles } from "@/lib/zipStore";
 
 const PDF_PREVIEW_DEBOUNCE_MS = 3000;
+/** Gap between successive downloads so the browser accepts both clicks. */
+const PDF_DOWNLOAD_GAP_MS = 250;
 
 type ViewMode = "edit" | "preview";
 
@@ -54,7 +55,8 @@ function pdfBaseName(fullName: string, companyName?: string): string {
   const company = companyName?.trim()
     ? slugForFilename(companyName)
     : null;
-  return company ? `${name}_${company}` : name;
+  // Company first so Downloads sorts by employer.
+  return company ? `${company}_${name}` : name;
 }
 
 export type MasterDumpRequest = {
@@ -225,19 +227,13 @@ export default function ResumeEditor({
       ).toBlob(),
     ]);
 
-    // Chrome blocks a second programmatic download after async work; zip
-    // both PDFs so one click always delivers resume + cover letter.
-    const zip = zipStoreFiles([
-      {
-        name: `${base}_Resume.pdf`,
-        data: await resumeBlob.arrayBuffer(),
-      },
-      {
-        name: `${base}_Cover_Letter.pdf`,
-        data: await coverLetterBlob.arrayBuffer(),
-      },
-    ]);
-    downloadBlob(zip, `${base}.zip`);
+    // Separate PDF downloads (not a zip). A short gap helps Chrome accept
+    // the second programmatic download after async blob generation.
+    downloadBlob(resumeBlob, `${base}_Resume.pdf`);
+    await new Promise<void>((resolve) => {
+      window.setTimeout(resolve, PDF_DOWNLOAD_GAP_MS);
+    });
+    downloadBlob(coverLetterBlob, `${base}_Cover_Letter.pdf`);
   }
 
   function handlePreview() {
@@ -338,13 +334,23 @@ export default function ResumeEditor({
           >
             {saving ? "Saving…" : "Save"}
           </Button>
-          <Button
-            variant="secondary"
-            type="button"
-            onClick={() => void handleDownload()}
-          >
-            Download PDFs
-          </Button>
+          <div className="flex items-center gap-2">
+            {companyName?.trim() ? (
+              <span
+                className="hidden max-w-40 truncate text-xs text-zinc-500 sm:inline"
+                title={companyName.trim()}
+              >
+                {companyName.trim()}
+              </span>
+            ) : null}
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={() => void handleDownload()}
+            >
+              Download PDFs
+            </Button>
+          </div>
         </div>
       </div>
 

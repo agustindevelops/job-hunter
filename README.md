@@ -60,7 +60,27 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-No `.env` file is required. Next.js only serves the UI; profile data and AI calls run in the browser.
+### Optional: seed API key and model from `.env`
+
+For local development you can skip the API key modal by copying `.env.example` to `.env.local`:
+
+```bash
+cp .env.example .env.local
+```
+
+Set:
+
+| Variable | Purpose |
+| --- | --- |
+| `NEXT_PUBLIC_AI_API_KEY` | Provider API key (any value works for Ollama, e.g. `ollama`) |
+| `NEXT_PUBLIC_AI_MODEL` | Starting model id (e.g. `gpt-5.6-terra`, `llama3.2`) |
+| `NEXT_PUBLIC_AI_BASE_URL` | Optional base URL override |
+
+The app checks these **first** when loading AI config. Session overrides from the modal still win until you refresh. Restart the dev server after changing env values.
+
+`NEXT_PUBLIC_*` variables are inlined into the client bundle — use them only locally; do not commit real keys.
+
+Without `.env`, Next.js only serves the UI; profile data and AI calls still run in the browser, and the modal prompts for a key when needed.
 
 ### 3. Local workflow
 
@@ -117,7 +137,8 @@ AI is **bring your own access**. The app never ships with a shared provider key 
 | Stored? | Where |
 | --- | --- |
 | Yes (session only) | React state in `AiConfigProvider` (`src/context/AiConfigContext.tsx`) |
-| No | IndexedDB, `localStorage`, cookies, disk, or a Job Hunter server |
+| Yes (optional local) | `NEXT_PUBLIC_AI_API_KEY` / `NEXT_PUBLIC_AI_MODEL` in `.env.local` — checked first on load (`src/lib/aiEnvConfig.ts`) |
+| No | IndexedDB, `localStorage`, cookies, or a Job Hunter server |
 
 ### How to add a key in the UI
 
@@ -132,7 +153,7 @@ You can also open the modal from profile AI actions (for example dumping text in
 
 ### What happens under the hood
 
-1. `ensureAiConfig()` (`src/api/ai/bridge.ts`) reads in-memory config or opens the modal.
+1. `ensureAiConfig()` (`src/api/ai/bridge.ts`) reads in-memory config, then optional `.env` defaults (`src/lib/aiEnvConfig.ts`), or opens the modal.
 2. `createLanguageModel()` (`src/lib/aiClient.ts`) builds a [Vercel AI SDK](https://ai-sdk.dev/) model from your config.
 3. Calls go **from the browser straight to the provider** (OpenAI, Anthropic, Google, Groq, or local Ollama) — not through a Job Hunter API route that holds your key.
 4. Helpers like `generateAiText` / `streamAiText` (`src/api/ai/generate.ts`) gate every generation behind that key check.

@@ -4,6 +4,7 @@ import type { Job, LocationType } from "@/types/db";
 export type UpdateJobInput = {
   link: string;
   jobTitle: string;
+  company: string;
   location: string;
   locationType: LocationType;
   salaryMin: number | null;
@@ -26,6 +27,7 @@ export async function updateJob(
   const patch: Partial<Job> = {
     link: input.link.trim(),
     jobTitle: input.jobTitle.trim(),
+    company: input.company.trim(),
     location: input.location.trim(),
     locationType: input.locationType,
     salaryMin: input.salaryMin,

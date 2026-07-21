@@ -38,6 +38,7 @@ export async function createJobFromApply({
     maxYearsOfExperience: enriched.maxYearsOfExperience,
     experienceLevel: enriched.experienceLevel,
     jobTitle: enriched.jobTitle,
+    company: enriched.company,
     compatibilityScore: null,
     compatibilityQualification: null,
     compatibilityQualificationReason: "",

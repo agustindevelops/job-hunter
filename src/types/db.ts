@@ -184,6 +184,8 @@ export type Job = {
   maxYearsOfExperience: string;
   experienceLevel: string;
   jobTitle: string;
+  /** Employer / company name for this posting. */
+  company: string;
   dataDump: string;
   body: string;
   /** Average of the three compatibility metrics (1–5), one decimal. */

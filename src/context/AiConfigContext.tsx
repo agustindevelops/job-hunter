@@ -16,6 +16,7 @@ import {
   unregisterAiConfigBridge,
 } from "@/api/ai";
 import ApiKeyModal from "@/components/Jobs/ApiKeyModal";
+import { getAiConfigFromEnv } from "@/lib/aiEnvConfig";
 import type { AiConfig } from "@/types/ai";
 
 type AiConfigContextValue = {
@@ -34,10 +35,14 @@ type AiConfigContextValue = {
 const AiConfigContext = createContext<AiConfigContextValue | null>(null);
 
 export function AiConfigProvider({ children }: { children: ReactNode }) {
-  const [config, setConfigState] = useState<AiConfig | null>(null);
+  const [config, setConfigState] = useState<AiConfig | null>(() =>
+    getAiConfigFromEnv(),
+  );
   const [modalOpen, setModalOpen] = useState(false);
   const configRef = useRef(config);
   configRef.current = config;
+  /** After the user deletes the key, skip env until the next full page load. */
+  const envSuppressedRef = useRef(false);
 
   const pendingRef = useRef<{
     resolve: (config: AiConfig) => void;
@@ -45,11 +50,19 @@ export function AiConfigProvider({ children }: { children: ReactNode }) {
   } | null>(null);
   const pendingPromiseRef = useRef<Promise<AiConfig> | null>(null);
 
+  const resolveConfig = useCallback((): AiConfig | null => {
+    if (configRef.current) return configRef.current;
+    if (envSuppressedRef.current) return null;
+    return getAiConfigFromEnv();
+  }, []);
+
   const setConfig = useCallback((next: AiConfig) => {
+    envSuppressedRef.current = false;
     setConfigState(next);
   }, []);
 
   const clearConfig = useCallback(() => {
+    envSuppressedRef.current = true;
     setConfigState(null);
   }, []);
 
@@ -70,8 +83,10 @@ export function AiConfigProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const promptForConfig = useCallback(() => {
-    if (configRef.current) {
-      return Promise.resolve(configRef.current);
+    const existing = resolveConfig();
+    if (existing) {
+      if (!configRef.current) setConfigState(existing);
+      return Promise.resolve(existing);
     }
 
     if (pendingPromiseRef.current) {
@@ -83,22 +98,26 @@ export function AiConfigProvider({ children }: { children: ReactNode }) {
       setModalOpen(true);
     });
     return pendingPromiseRef.current;
-  }, []);
+  }, [resolveConfig]);
 
   const ensureConfig = useCallback(async () => {
-    if (configRef.current) return configRef.current;
+    const existing = resolveConfig();
+    if (existing) {
+      if (!configRef.current) setConfigState(existing);
+      return existing;
+    }
     return promptForConfig();
-  }, [promptForConfig]);
+  }, [promptForConfig, resolveConfig]);
 
   useEffect(() => {
     registerAiConfigBridge({
-      getConfig: () => configRef.current,
+      getConfig: () => resolveConfig(),
       promptForConfig,
     });
     return () => {
       unregisterAiConfigBridge();
     };
-  }, [promptForConfig]);
+  }, [promptForConfig, resolveConfig]);
 
   function handleModalClose() {
     setModalOpen(false);
@@ -106,7 +125,7 @@ export function AiConfigProvider({ children }: { children: ReactNode }) {
   }
 
   function handleModalSaved(saved: AiConfig) {
-    setConfigState(saved);
+    setConfig(saved);
     setModalOpen(false);
     settlePending(saved);
   }

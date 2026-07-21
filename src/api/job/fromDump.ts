@@ -8,6 +8,7 @@ import type { LocationType } from "@/types/db";
  */
 export type JobFromDumpFields = {
   jobTitle: string;
+  company: string;
   location: string;
   locationType: LocationType;
   salaryMin: number | null;
@@ -32,6 +33,7 @@ const BENEFIT_NAMES_SET = new Set<string>(BENEFIT_NAMES);
 
 const RESPONSE_SHAPE = `{
   "jobTitle": string,
+  "company": string,
   "location": string,
   "locationType": "hybrid" | "remote" | "on_site" | "unknown",
   "salaryMin": number | null,
@@ -50,7 +52,8 @@ Return ONLY valid JSON matching this shape (no markdown fences, no commentary):
 ${RESPONSE_SHAPE}
 
 Rules:
-- Use only information present in the dump. Do not invent salary, location, or requirements.
+- Use only information present in the dump. Do not invent salary, location, company, or requirements.
+- company is the employer / organization name when clearly stated; otherwise "".
 - locationType must be one of: hybrid, remote, on_site, unknown.
 - salaryMin / salaryMax are annual USD numbers when clearly stated; otherwise null. Do not convert hourly unless the dump gives an annual figure.
 - minYearsOfExperience / maxYearsOfExperience are short strings (e.g. "3", "5+") or "" if unknown.
@@ -111,6 +114,7 @@ function parseJsonObject(text: string): Record<string, unknown> {
 function normalizeJobDump(raw: Record<string, unknown>): JobFromDumpFields {
   return {
     jobTitle: asString(raw.jobTitle).trim(),
+    company: asString(raw.company).trim(),
     location: asString(raw.location).trim(),
     locationType: asLocationType(raw.locationType),
     salaryMin: asNumberOrNull(raw.salaryMin),
