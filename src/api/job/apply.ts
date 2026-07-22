@@ -39,6 +39,7 @@ export async function createJobFromApply({
     experienceLevel: enriched.experienceLevel,
     jobTitle: enriched.jobTitle,
     company: enriched.company,
+    appliedAt: Date.now(),
     compatibilityScore: null,
     compatibilityQualification: null,
     compatibilityQualificationReason: "",

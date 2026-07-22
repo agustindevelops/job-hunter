@@ -188,6 +188,8 @@ export type Job = {
   company: string;
   dataDump: string;
   body: string;
+  /** When the job was added via Apply (epoch ms, local calendar day). */
+  appliedAt?: number;
   /** Average of the three compatibility metrics (1–5), one decimal. */
   compatibilityScore?: number | null;
   compatibilityQualification?: number | null;

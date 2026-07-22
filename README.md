@@ -73,7 +73,8 @@ Set:
 | Variable | Purpose |
 | --- | --- |
 | `NEXT_PUBLIC_AI_API_KEY` | Provider API key (any value works for Ollama, e.g. `ollama`) |
-| `NEXT_PUBLIC_AI_MODEL` | Starting model id (e.g. `gpt-5.6-terra`, `llama3.2`) |
+| `NEXT_PUBLIC_AI_MODEL` | Everyday / cheaper model id (e.g. `gpt-4o-mini`, `llama3.2`) |
+| `NEXT_PUBLIC_AI_QUALITY_MODEL` | Resume + cover letter model id (e.g. `gpt-5.6-terra`) |
 | `NEXT_PUBLIC_AI_BASE_URL` | Optional base URL override |
 
 The app checks these **first** when loading AI config. Session overrides from the modal still win until you refresh. Restart the dev server after changing env values.
@@ -137,7 +138,7 @@ AI is **bring your own access**. The app never ships with a shared provider key 
 | Stored? | Where |
 | --- | --- |
 | Yes (session only) | React state in `AiConfigProvider` (`src/context/AiConfigContext.tsx`) |
-| Yes (optional local) | `NEXT_PUBLIC_AI_API_KEY` / `NEXT_PUBLIC_AI_MODEL` in `.env.local` — checked first on load (`src/lib/aiEnvConfig.ts`) |
+| Yes (optional local) | `NEXT_PUBLIC_AI_API_KEY` / `NEXT_PUBLIC_AI_MODEL` / `NEXT_PUBLIC_AI_QUALITY_MODEL` in `.env.local` — checked first on load (`src/lib/aiEnvConfig.ts`) |
 | No | IndexedDB, `localStorage`, cookies, or a Job Hunter server |
 
 ### How to add a key in the UI

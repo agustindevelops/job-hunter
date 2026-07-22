@@ -248,6 +248,7 @@ describe("matchApplicationFromDump persistence safety", () => {
       ensureAiConfig: vi.fn(async () => ({
         provider: "openai",
         model: "gpt-test",
+        qualityModel: "gpt-test-quality",
         apiKey: "x",
         baseUrl: "https://example.com",
       })),
@@ -305,6 +306,7 @@ describe("matchApplicationFromDump persistence safety", () => {
       ensureAiConfig: vi.fn(async () => ({
         provider: "openai",
         model: "gpt-test",
+        qualityModel: "gpt-test-quality",
         apiKey: "x",
         baseUrl: "https://example.com",
       })),

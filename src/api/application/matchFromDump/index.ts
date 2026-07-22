@@ -1,4 +1,5 @@
 import { ensureAiConfig, generateAiObject } from "@/api/ai";
+import { resolveAiConfigForTier } from "@/lib/aiModels";
 import {
   readApplicationTree,
   type ApplicationTree,
@@ -112,6 +113,7 @@ async function tailorExperience(input: {
   }
 
   const result = await generateAiObject({
+    tier: "quality",
     schema,
     system: ENTITY_SYSTEM_PROMPT,
     prompt,
@@ -137,6 +139,7 @@ async function tailorProject(input: {
 }): Promise<TailoredProject> {
   const prompt = buildProjectEntityPrompt(input);
   return generateAiObject({
+    tier: "quality",
     schema: tailoredProjectSchema,
     system: ENTITY_SYSTEM_PROMPT,
     prompt,
@@ -174,10 +177,12 @@ export async function matchApplicationFromDump(
     jobBody: input.jobBody ?? job.body ?? "",
   };
 
-  const config = await ensureAiConfig();
+  const session = await ensureAiConfig();
+  const config = resolveAiConfigForTier(session, "quality");
   console.log("[matchApplicationFromDump] model", {
     provider: config.provider,
     model: config.model,
+    tier: "quality",
     payload: { job: jobCtx, master },
   });
 
@@ -240,6 +245,7 @@ export async function matchApplicationFromDump(
 
     const [skillsResult, achievementsResult] = await Promise.all([
       generateAiObject({
+        tier: "quality",
         schema: tailoredSkillsResponseSchema,
         system: SKILLS_SYSTEM_PROMPT,
         prompt: buildSkillsPrompt({
@@ -252,6 +258,7 @@ export async function matchApplicationFromDump(
         buildRepairPrompt: repairBuilder(),
       }),
       generateAiObject({
+        tier: "quality",
         schema: tailoredAchievementsResponseSchema,
         system: ACHIEVEMENTS_SYSTEM_PROMPT,
         prompt: buildAchievementsPrompt({
@@ -296,6 +303,7 @@ export async function matchApplicationFromDump(
     });
 
     const coverResult = await generateAiObject({
+      tier: "quality",
       schema: tailoredCoverLetterResponseSchema,
       system: COVER_LETTER_SYSTEM_PROMPT,
       prompt: buildCoverLetterPrompt(coverLetterPayload),

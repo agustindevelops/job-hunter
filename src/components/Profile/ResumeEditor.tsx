@@ -10,7 +10,9 @@ import Button from "@/components/Button";
 import DumpMasterModal from "@/components/Profile/DumpMasterModal";
 import ProfileForm from "@/components/Profile/ProfileForm";
 import ResumeThemeBar from "@/components/Profile/ResumeThemeBar";
-import CoverLetter from "@/components/CoverLetter";
+import CoverLetter, {
+  formatCoverLetterClipboardText,
+} from "@/components/CoverLetter";
 import Resume from "@/components/Resume";
 import { upsertTheme } from "@/api/profile";
 import { db } from "@/db";
@@ -105,6 +107,7 @@ export default function ResumeEditor({
   const [previewValues, setPreviewValues] =
     useState<ProfileFormValues>(EMPTY_PROFILE_FORM);
   const [dumpMode, setDumpMode] = useState<MasterFromDumpMode | null>(null);
+  const [coverCopied, setCoverCopied] = useState(false);
   const { openApiKeyModal } = useAiConfig();
 
   const loadRef = useRef(load);
@@ -161,6 +164,26 @@ export default function ResumeEditor({
     ),
     [bundle.profile, previewValues.coverLetter, companyName],
   );
+
+  useEffect(() => {
+    if (!coverCopied) return;
+    const timer = window.setTimeout(() => setCoverCopied(false), 1500);
+    return () => window.clearTimeout(timer);
+  }, [coverCopied]);
+
+  async function handleCopyCoverLetter() {
+    const text = formatCoverLetterClipboardText({
+      fullName: previewValues.fullName,
+      coverLetter: previewValues.coverLetter,
+      companyName,
+    });
+    try {
+      await navigator.clipboard.writeText(text);
+      setCoverCopied(true);
+    } catch {
+      setCoverCopied(false);
+    }
+  }
 
   useEffect(() => {
     setReady(true);
@@ -397,9 +420,24 @@ export default function ResumeEditor({
               )}
             </div>
             <div className="flex min-h-0 min-w-0 flex-col gap-2">
-              <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                Cover letter
-              </p>
+              <div className="flex items-center justify-start gap-4">
+                <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                  Cover letter
+                </p>
+                <button
+                  type="button"
+                  onClick={() => void handleCopyCoverLetter()}
+                  className="rounded-md p-1 text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                  aria-label={
+                    coverCopied
+                      ? "Cover letter copied"
+                      : "Copy cover letter text"
+                  }
+                  title={coverCopied ? "Copied" : "Copy text"}
+                >
+                  {coverCopied ? <CheckIcon /> : <ClipboardIcon />}
+                </button>
+              </div>
               {ready ? (
                 <PDFViewer
                   showToolbar={false}
@@ -451,5 +489,41 @@ export default function ResumeEditor({
         />
       ) : null}
     </div>
+  );
+}
+
+function ClipboardIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className="h-4 w-4"
+      aria-hidden
+    >
+      <path
+        fillRule="evenodd"
+        d="M15.988 3.012A2.25 2.25 0 0 1 18 5.25v6.5A2.25 2.25 0 0 1 15.75 14H13.5v-3.379a3.75 3.75 0 0 0-1.293-2.828l-1.515-1.515A3.75 3.75 0 0 0 8.122 5H5.25A2.25 2.25 0 0 1 7.5 2.75h6.879a2.25 2.25 0 0 1 1.609.662ZM8.122 6.5a2.25 2.25 0 0 1 1.591.659l1.515 1.515A2.25 2.25 0 0 1 12 10.121V15.75a2.25 2.25 0 0 1-2.25 2.25h-6.5A2.25 2.25 0 0 1 1 15.75v-6.5A2.25 2.25 0 0 1 3.25 7h4.872Z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className="h-4 w-4 text-emerald-600"
+      aria-hidden
+    >
+      <path
+        fillRule="evenodd"
+        d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"
+        clipRule="evenodd"
+      />
+    </svg>
   );
 }

@@ -18,6 +18,16 @@ function paragraphsFromBody(body: string): string[] {
     .filter(Boolean);
 }
 
+/** Like paragraphsFromBody, but also splits on single newlines for clipboard text. */
+function paragraphsForClipboard(body: string): string[] {
+  const trimmed = body.trim();
+  if (!trimmed) return [];
+  const blocks = /\n\s*\n/.test(trimmed)
+    ? trimmed.split(/\n\s*\n/)
+    : trimmed.split(/\n/);
+  return blocks.map((block) => block.replace(/\n/g, " ").trim()).filter(Boolean);
+}
+
 function formatLocation(profile: Profile): string {
   const parts = [profile.city, profile.state].filter(Boolean);
   const cityState = parts.join(", ");
@@ -32,14 +42,33 @@ function formatToday(): string {
   }).format(new Date());
 }
 
-function salutationFor(companyName?: string): string {
+export function salutationFor(companyName?: string): string {
   const company = companyName?.trim();
   if (company) return `Dear ${company},`;
   return "Dear Hiring Team,";
 }
 
-const CLOSING_THANK_YOU =
+export const CLOSING_THANK_YOU =
   "Thank you for your consideration for this position.";
+
+/** Plain text from salutation through sign-off (no header/date). */
+export function formatCoverLetterClipboardText(input: {
+  fullName: string;
+  coverLetter: string;
+  companyName?: string;
+}): string {
+  const paragraphs = paragraphsForClipboard(input.coverLetter);
+  const name = input.fullName.trim() || "Applicant";
+  const body = paragraphs.join("\n\n");
+  const sections = [salutationFor(input.companyName)];
+
+  if (body) {
+    sections.push(body, CLOSING_THANK_YOU);
+  }
+
+  sections.push(`Sincerely,\n${name}`);
+  return `${sections.join("\n\n")}\n`;
+}
 
 export default function CoverLetter({
   profile,

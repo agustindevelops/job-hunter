@@ -284,6 +284,34 @@ class JobHunterDB extends Dexie {
           await jobs.update(row.id, { company: "" });
         }
       });
+
+    // appliedAt for "jobs applied today" counter.
+    this.version(7).stores({
+      contacts: "++id, email",
+      profiles: "++id, contactId, applicationId",
+      applications: "++id, status",
+      themes: "++id, &profileId",
+      targetRoles: "++id, profileId",
+      experiences: "++id, applicationId, company, startDate",
+      projects: "++id, applicationId, name",
+      education: "++id, applicationId, school",
+      skillCategories: "++id, applicationId, category",
+      achievements: "++id, applicationId",
+      faqs: "++id, applicationId",
+      tags: "++id, &name",
+      experienceTags: "++id, experienceId, tagId, [experienceId+tagId]",
+      projectTags: "++id, projectId, tagId, [projectId+tagId]",
+      educationTags: "++id, educationId, tagId, [educationId+tagId]",
+      skillCategoryTags:
+        "++id, skillCategoryId, tagId, [skillCategoryId+tagId]",
+      achievementTags: "++id, achievementId, tagId, [achievementId+tagId]",
+      benefitTypes: "++id, &name",
+      jobs: "++id, contactId, applicationId, company, locationType, jobTitle, experienceLevel, appliedAt",
+      jobTags: "++id, jobId, tagId, [jobId+tagId]",
+      jobBenefits: "++id, jobId, benefitTypeId, [jobId+benefitTypeId]",
+      profileBenefits:
+        "++id, profileId, benefitTypeId, [profileId+benefitTypeId]",
+    });
   }
 }
 

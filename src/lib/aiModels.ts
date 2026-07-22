@@ -1,4 +1,4 @@
-import type { AiProvider } from "@/types/ai";
+import type { AiConfig, AiModelTier, AiProvider } from "@/types/ai";
 
 export type AiModelOption = {
   id: string;
@@ -9,7 +9,11 @@ export type AiModelOption = {
   keyHint: string;
 };
 
-export const DEFAULT_MODEL_ID = "gpt-5.6-terra";
+/** Everyday / cheaper default. */
+export const DEFAULT_MODEL_ID = "gpt-4o-mini";
+
+/** Resume + cover letter default. */
+export const DEFAULT_QUALITY_MODEL_ID = "gpt-5.6-terra";
 
 const OPENAI = {
   provider: "openai" as const,
@@ -169,5 +173,43 @@ export function getModelOption(modelId: string): AiModelOption | undefined {
 }
 
 export function getDefaultModelOption(): AiModelOption {
-  return getModelOption(DEFAULT_MODEL_ID) ?? AI_MODELS[0];
+  return getModelOption(DEFAULT_MODEL_ID) ?? AI_MODELS[0]!;
+}
+
+export function getDefaultQualityModelOption(): AiModelOption {
+  return getModelOption(DEFAULT_QUALITY_MODEL_ID) ?? getDefaultModelOption();
+}
+
+/**
+ * Resolves provider/model/baseUrl for a request tier.
+ * Quality uses the quality model’s catalog entry; if it shares a provider with
+ * the everyday model, the configured base URL override is kept.
+ */
+export function resolveAiConfigForTier(
+  config: AiConfig,
+  tier: AiModelTier = "standard",
+): AiConfig {
+  if (tier === "standard") {
+    return {
+      apiKey: config.apiKey,
+      model: config.model,
+      qualityModel: config.qualityModel,
+      provider: config.provider,
+      baseUrl: config.baseUrl,
+    };
+  }
+
+  const qualityOption =
+    getModelOption(config.qualityModel) ??
+    getModelOption(config.model) ??
+    getDefaultQualityModelOption();
+  const sameProvider = qualityOption.provider === config.provider;
+
+  return {
+    apiKey: config.apiKey,
+    model: qualityOption.id,
+    qualityModel: config.qualityModel,
+    provider: qualityOption.provider,
+    baseUrl: sameProvider ? config.baseUrl : qualityOption.baseUrl,
+  };
 }

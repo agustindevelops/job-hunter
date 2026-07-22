@@ -20,8 +20,10 @@ import { syncJobBenefits } from "@/api/job/syncBenefits";
 import { upsertProfileIdentity } from "@/api/profile";
 import AppHeader from "@/components/AppHeader";
 import Button from "@/components/Button";
+import ApplyJobModal from "@/components/Jobs/ApplyJobModal";
 import JobDetailsPanel from "@/components/Jobs/JobDetailsPanel";
 import ResumeEditor from "@/components/Profile/ResumeEditor";
+import { useAiConfig } from "@/context/AiConfigContext";
 import {
   formValuesToApplicationInput,
   formValuesToUpsertInput,
@@ -43,10 +45,12 @@ function autoClearStorageKey(jobId: number) {
 export default function JobPage({ params }: JobPageProps) {
   const { "job-id": jobIdParam } = use(params);
   const jobId = Number(jobIdParam);
+  const { ensureConfig } = useAiConfig();
   const [resumeKey, setResumeKey] = useState(0);
   const [clearing, setClearing] = useState(false);
   const [matching, setMatching] = useState(false);
   const [matchError, setMatchError] = useState<string | null>(null);
+  const [applyOpen, setApplyOpen] = useState(false);
 
   const jobResult = useLiveQuery(async () => {
     if (!Number.isFinite(jobId)) return null;
@@ -105,6 +109,15 @@ export default function JobPage({ params }: JobPageProps) {
       setResumeKey((k) => k + 1);
     } finally {
       setClearing(false);
+    }
+  }
+
+  async function handleApplyClick() {
+    try {
+      await ensureConfig();
+      setApplyOpen(true);
+    } catch (error) {
+      if (!isAiConfigCancelledError(error)) throw error;
     }
   }
 
@@ -189,48 +202,59 @@ export default function JobPage({ params }: JobPageProps) {
   const hasApplication = jobResult.application != null;
 
   return (
-    <ResumeEditor
-      reloadKey={`${jobId}-${resumeKey}`}
-      companyName={jobResult.job.company?.trim() || undefined}
-      toolbarActions={
-        <>
-          <Button
-            type="button"
-            variant="secondary"
-            disabled={matching || clearing}
-            onClick={() => void handleMatchFromDump()}
-          >
-            {matching ? "Matching…" : "Match from dump"}
-          </Button>
-          {hasApplication ? (
+    <>
+      <ResumeEditor
+        reloadKey={`${jobId}-${resumeKey}`}
+        companyName={jobResult.job.company?.trim() || undefined}
+        toolbarActions={
+          <>
             <Button
               type="button"
               variant="secondary"
-              disabled={clearing || matching}
-              onClick={() => void handleClearResume()}
+              disabled={matching || clearing}
+              onClick={() => void handleMatchFromDump()}
             >
-              {clearing ? "Clearing…" : "Clear resume"}
+              {matching ? "Matching…" : "Match from dump"}
             </Button>
-          ) : null}
-        </>
-      }
-      beforeForm={
-        <>
-          {matchError ? (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
-              {matchError}
-            </div>
-          ) : null}
-          <JobDetailsPanel
-            jobId={jobId}
-            result={jobResult}
-            onUpdated={() => setResumeKey((k) => k + 1)}
-          />
-        </>
-      }
-      loadingLabel="Loading job resume…"
-      load={load}
-      save={save}
-    />
+            {hasApplication ? (
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={clearing || matching}
+                onClick={() => void handleClearResume()}
+              >
+                {clearing ? "Clearing…" : "Clear resume"}
+              </Button>
+            ) : null}
+          </>
+        }
+        beforeForm={
+          <>
+            {matchError ? (
+              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+                {matchError}
+              </div>
+            ) : null}
+            <JobDetailsPanel
+              jobId={jobId}
+              result={jobResult}
+              onUpdated={() => setResumeKey((k) => k + 1)}
+              headerActions={
+                <Button
+                  type="button"
+                  onClick={() => void handleApplyClick()}
+                >
+                  Apply
+                </Button>
+              }
+            />
+          </>
+        }
+        loadingLabel="Loading job resume…"
+        load={load}
+        save={save}
+      />
+      <ApplyJobModal open={applyOpen} onClose={() => setApplyOpen(false)} />
+    </>
   );
 }

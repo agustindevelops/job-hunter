@@ -1,6 +1,8 @@
 import {
   AI_MODELS,
   DEFAULT_MODEL_ID,
+  DEFAULT_QUALITY_MODEL_ID,
+  getDefaultQualityModelOption,
   getModelOption,
   type AiModelOption,
 } from "@/lib/aiModels";
@@ -12,7 +14,8 @@ import type { AiConfig } from "@/types/ai";
  * local development; do not commit real keys.
  *
  * - NEXT_PUBLIC_AI_API_KEY — provider API key (or any value for Ollama)
- * - NEXT_PUBLIC_AI_MODEL — model id (e.g. gpt-4o-mini, llama3.2)
+ * - NEXT_PUBLIC_AI_MODEL — everyday / cheaper model id (e.g. gpt-4o-mini)
+ * - NEXT_PUBLIC_AI_QUALITY_MODEL — resume + cover letter model id
  * - NEXT_PUBLIC_AI_BASE_URL — optional base URL override
  */
 export function getEnvAiApiKey(): string {
@@ -23,16 +26,22 @@ export function getEnvAiModelId(): string {
   return process.env.NEXT_PUBLIC_AI_MODEL?.trim() ?? "";
 }
 
+export function getEnvAiQualityModelId(): string {
+  return process.env.NEXT_PUBLIC_AI_QUALITY_MODEL?.trim() ?? "";
+}
+
 export function getEnvAiBaseUrl(): string {
   return process.env.NEXT_PUBLIC_AI_BASE_URL?.trim().replace(/\/$/, "") ?? "";
 }
 
-function resolveModelOption(modelId: string): AiModelOption {
+function resolveModelOption(
+  modelId: string,
+  fallbackId: string = DEFAULT_MODEL_ID,
+): AiModelOption {
   const known = getModelOption(modelId);
   if (known) return known;
 
-  const fallback =
-    getModelOption(DEFAULT_MODEL_ID) ?? AI_MODELS[0]!;
+  const fallback = getModelOption(fallbackId) ?? AI_MODELS[0]!;
   return {
     id: modelId,
     label: modelId,
@@ -42,11 +51,18 @@ function resolveModelOption(modelId: string): AiModelOption {
   };
 }
 
-/** Starting model for the API key modal — env model first, else app default. */
+/** Starting everyday model for the API key modal — env model first, else app default. */
 export function getStartingModelOption(): AiModelOption {
   const envModel = getEnvAiModelId();
   if (envModel) return resolveModelOption(envModel);
   return getModelOption(DEFAULT_MODEL_ID) ?? AI_MODELS[0]!;
+}
+
+/** Starting quality model for resume/cover letter. */
+export function getStartingQualityModelOption(): AiModelOption {
+  const envModel = getEnvAiQualityModelId();
+  if (envModel) return resolveModelOption(envModel, DEFAULT_QUALITY_MODEL_ID);
+  return getDefaultQualityModelOption();
 }
 
 /**
@@ -56,13 +72,17 @@ export function getStartingModelOption(): AiModelOption {
 export function getAiConfigFromEnv(): AiConfig | null {
   const envKey = getEnvAiApiKey();
   const envModel = getEnvAiModelId();
+  const envQualityModel = getEnvAiQualityModelId();
   const envBaseUrl = getEnvAiBaseUrl();
 
-  if (!envKey && !envModel) return null;
+  if (!envKey && !envModel && !envQualityModel) return null;
 
   const option = envModel
     ? resolveModelOption(envModel)
     : (getModelOption(DEFAULT_MODEL_ID) ?? AI_MODELS[0]!);
+  const qualityOption = envQualityModel
+    ? resolveModelOption(envQualityModel, DEFAULT_QUALITY_MODEL_ID)
+    : getDefaultQualityModelOption();
 
   const apiKey =
     envKey || (option.provider === "ollama" ? "ollama" : "");
@@ -71,6 +91,7 @@ export function getAiConfigFromEnv(): AiConfig | null {
   return {
     apiKey,
     model: option.id,
+    qualityModel: qualityOption.id,
     provider: option.provider,
     baseUrl: envBaseUrl || option.baseUrl,
   };

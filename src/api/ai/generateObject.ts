@@ -1,5 +1,7 @@
 import { ensureAiConfig } from "@/api/ai/bridge";
 import { createLanguageModel } from "@/lib/aiClient";
+import { resolveAiConfigForTier } from "@/lib/aiModels";
+import type { AiModelTier } from "@/types/ai";
 import { generateText, NoObjectGeneratedError, Output } from "ai";
 import type { z } from "zod";
 
@@ -8,6 +10,10 @@ export type GenerateAiObjectOptions<T> = {
   schema: z.ZodType<T>;
   prompt: string;
   system?: string;
+  /**
+   * Model tier: `standard` (cheap, default) or `quality` (resume + cover letter).
+   */
+  tier?: AiModelTier;
   /**
    * One bounded repair attempt when structured output or text fallback
    * fails schema validation. Default true.
@@ -30,7 +36,8 @@ export type GenerateAiObjectOptions<T> = {
 export async function generateAiObject<T>(
   options: GenerateAiObjectOptions<T>,
 ): Promise<T> {
-  const config = await ensureAiConfig();
+  const session = await ensureAiConfig();
+  const config = resolveAiConfigForTier(session, options.tier ?? "standard");
   const model = createLanguageModel(config);
   const allowRepair = options.repair !== false;
 

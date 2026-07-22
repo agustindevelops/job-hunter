@@ -3,6 +3,7 @@ export { createJobFromApply } from "./apply";
 export { jobFromDump } from "./fromDump";
 export type { JobFromDumpFields } from "./fromDump";
 export { deleteJob } from "./delete";
+export { countJobsAppliedToday } from "./countAppliedToday";
 export { listJobs } from "./list";
 export type { JobListItem } from "./list";
 export { readJob } from "./read";

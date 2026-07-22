@@ -1,7 +1,9 @@
 "use client";
 
+import { useLiveQuery } from "dexie-react-hooks";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { countJobsAppliedToday } from "@/api/job";
 import {
   GUIDES_PATH,
   JOBS_PATH,
@@ -38,6 +40,7 @@ function navLinkClass(active: boolean) {
 
 export default function AppHeader() {
   const pathname = usePathname();
+  const appliedToday = useLiveQuery(() => countJobsAppliedToday());
   const onJobs =
     pathname === JOBS_PATH || pathname.startsWith(`${JOBS_PATH}/`);
   const onGuides =
@@ -47,12 +50,23 @@ export default function AppHeader() {
 
   return (
     <header className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-zinc-200 bg-white px-4 py-3 sm:px-6">
-      <Link
-        href="/"
-        className="text-sm font-semibold tracking-tight text-zinc-900"
-      >
-        {SITE_NAME}
-      </Link>
+      <div className="flex items-center gap-2.5">
+        <Link
+          href="/"
+          className="text-sm font-semibold tracking-tight text-zinc-900"
+        >
+          {SITE_NAME}
+        </Link>
+        {appliedToday != null ? (
+          <Link
+            href={JOBS_PATH}
+            title={`${appliedToday} job${appliedToday === 1 ? "" : "s"} applied today`}
+            className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600 transition hover:bg-zinc-200 hover:text-zinc-800"
+          >
+            {appliedToday} today
+          </Link>
+        ) : null}
+      </div>
 
       <nav className="flex items-center gap-1 sm:gap-2">
         <Link href={JOBS_PATH} className={navLinkClass(onJobs)}>

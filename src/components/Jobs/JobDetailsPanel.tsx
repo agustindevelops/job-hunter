@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import type { JobReadResult } from "@/api/job";
 import { updateJob, type UpdateJobInput } from "@/api/job";
@@ -68,12 +68,15 @@ type JobDetailsPanelProps = {
   jobId: number;
   result: JobReadResult;
   onUpdated?: () => void;
+  /** Extra actions next to Edit in the job header (e.g. Apply). */
+  headerActions?: ReactNode;
 };
 
 export default function JobDetailsPanel({
   jobId,
   result,
   onUpdated,
+  headerActions,
 }: JobDetailsPanelProps) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -156,7 +159,8 @@ export default function JobDetailsPanel({
           )}
         </div>
         {!editing ? (
-          <div className="flex shrink-0 gap-2">
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+            {headerActions}
             <Button
               type="button"
               variant="secondary"

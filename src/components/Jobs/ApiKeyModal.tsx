@@ -10,7 +10,10 @@ import {
   AI_MODELS,
   getModelOption,
 } from "@/lib/aiModels";
-import { getStartingModelOption } from "@/lib/aiEnvConfig";
+import {
+  getStartingModelOption,
+  getStartingQualityModelOption,
+} from "@/lib/aiEnvConfig";
 import { fieldClassName, labelClassName } from "@/lib/formStyles";
 import { API_KEYS_GUIDE_PATH } from "@/lib/site";
 import type { AiConfig } from "@/types/ai";
@@ -30,6 +33,7 @@ function maskApiKey(key: string) {
 }
 
 const defaultModel = getStartingModelOption();
+const defaultQualityModel = getStartingQualityModelOption();
 
 export default function ApiKeyModal({
   open,
@@ -42,18 +46,21 @@ export default function ApiKeyModal({
       defaultValues: {
         apiKey: "",
         model: defaultModel.id,
+        qualityModel: defaultQualityModel.id,
         provider: defaultModel.provider,
         baseUrl: defaultModel.baseUrl,
       },
     });
 
   const selectedModelId = watch("model");
+  const selectedQualityModelId = watch("qualityModel");
   const selectedOption = getModelOption(selectedModelId) ?? defaultModel;
   const keyLocked = !!config;
 
   useEffect(() => {
     if (!open) return;
     const starting = getStartingModelOption();
+    const startingQuality = getStartingQualityModelOption();
     const option = config
       ? (getModelOption(config.model) ?? {
           id: config.model,
@@ -64,12 +71,13 @@ export default function ApiKeyModal({
     reset({
       apiKey: "",
       model: option.id,
+      qualityModel: config?.qualityModel ?? startingQuality.id,
       provider: option.provider,
       baseUrl: config?.baseUrl ?? option.baseUrl,
     });
   }, [open, config, reset]);
 
-  function handleModelChange(modelId: string) {
+  function handleStandardModelChange(modelId: string) {
     const option = getModelOption(modelId);
     if (!option) return;
     setValue("model", option.id);
@@ -77,20 +85,31 @@ export default function ApiKeyModal({
     setValue("baseUrl", option.baseUrl);
   }
 
+  function handleQualityModelChange(modelId: string) {
+    const option = getModelOption(modelId);
+    if (!option) return;
+    setValue("qualityModel", option.id);
+  }
+
   function handleSave(values: ApiKeyFormValues) {
     const option = getModelOption(values.model) ?? defaultModel;
+    const qualityOption =
+      getModelOption(values.qualityModel) ?? defaultQualityModel;
     const apiKey = (config?.apiKey ?? values.apiKey).trim();
     const trimmed: AiConfig = {
       apiKey,
       model: option.id,
+      qualityModel: qualityOption.id,
       provider: option.provider,
       baseUrl: values.baseUrl.trim().replace(/\/$/, "") || option.baseUrl,
     };
-    if (!trimmed.apiKey || !trimmed.model || !trimmed.baseUrl) return;
+    if (!trimmed.apiKey || !trimmed.model || !trimmed.qualityModel || !trimmed.baseUrl)
+      return;
     setConfig(trimmed);
     reset({
       apiKey: "",
       model: trimmed.model,
+      qualityModel: trimmed.qualityModel,
       provider: trimmed.provider,
       baseUrl: trimmed.baseUrl,
     });
@@ -99,10 +118,13 @@ export default function ApiKeyModal({
 
   function handleDelete() {
     const option = getModelOption(selectedModelId) ?? defaultModel;
+    const qualityOption =
+      getModelOption(selectedQualityModelId) ?? defaultQualityModel;
     clearConfig();
     reset({
       apiKey: "",
       model: option.id,
+      qualityModel: qualityOption.id,
       provider: option.provider,
       baseUrl: option.baseUrl,
     });
@@ -116,16 +138,20 @@ export default function ApiKeyModal({
       description={
         <>
           <p>
-            Your API key, model, and endpoint are kept only in this browser
+            Your API key, models, and endpoint are kept only in this browser
             tab’s memory. They are never written to IndexedDB. Closing or
             refreshing the page clears session overrides. For local
             development you can seed defaults with{" "}
             <code className="rounded bg-zinc-100 px-1 py-0.5 text-[0.85em]">
               NEXT_PUBLIC_AI_API_KEY
-            </code>{" "}
-            and{" "}
+            </code>
+            ,{" "}
             <code className="rounded bg-zinc-100 px-1 py-0.5 text-[0.85em]">
               NEXT_PUBLIC_AI_MODEL
+            </code>
+            , and{" "}
+            <code className="rounded bg-zinc-100 px-1 py-0.5 text-[0.85em]">
+              NEXT_PUBLIC_AI_QUALITY_MODEL
             </code>{" "}
             in{" "}
             <code className="rounded bg-zinc-100 px-1 py-0.5 text-[0.85em]">
@@ -155,13 +181,13 @@ export default function ApiKeyModal({
       >
         <div>
           <label htmlFor="model" className={labelClassName}>
-            Model
+            Everyday model
           </label>
           <select
             id="model"
             className={fieldClassName}
             value={selectedModelId}
-            onChange={(event) => handleModelChange(event.target.value)}
+            onChange={(event) => handleStandardModelChange(event.target.value)}
           >
             {AI_MODELS.some((option) => option.id === selectedModelId) ? null : (
               <option value={selectedModelId}>{selectedModelId}</option>
@@ -172,6 +198,41 @@ export default function ApiKeyModal({
               </option>
             ))}
           </select>
+          <p className="mt-1.5 text-xs leading-relaxed text-zinc-500">
+            Cheaper model for job parsing, fit scoring, and profile import.
+          </p>
+        </div>
+
+        <div>
+          <label htmlFor="qualityModel" className={labelClassName}>
+            Resume &amp; cover letter model
+          </label>
+          <select
+            id="qualityModel"
+            className={fieldClassName}
+            {...register("qualityModel", {
+              required: true,
+              onChange: (event) =>
+                handleQualityModelChange(event.target.value),
+            })}
+          >
+            {AI_MODELS.some(
+              (option) => option.id === selectedQualityModelId,
+            ) ? null : (
+              <option value={selectedQualityModelId}>
+                {selectedQualityModelId}
+              </option>
+            )}
+            {AI_MODELS.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1.5 text-xs leading-relaxed text-zinc-500">
+            Higher-quality model used only when generating a tailored resume and
+            cover letter.
+          </p>
         </div>
 
         <div>
@@ -190,7 +251,7 @@ export default function ApiKeyModal({
               />
               <p className="mt-1.5 text-xs leading-relaxed text-zinc-500">
                 Key is locked. Delete it to enter a different one. You can still
-                change the model above.
+                change the models above.
               </p>
             </>
           ) : (
@@ -216,7 +277,7 @@ export default function ApiKeyModal({
             {...register("baseUrl", { required: true })}
           />
           <p className="mt-1.5 text-xs leading-relaxed text-zinc-500">
-            Fills in from the model you pick. Override for a proxy or custom
+            Fills in from the everyday model. Override for a proxy or custom
             local endpoint (Ollama defaults to{" "}
             <code className="rounded bg-zinc-100 px-1 py-0.5">
               http://localhost:11434/v1
