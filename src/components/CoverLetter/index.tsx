@@ -38,6 +38,9 @@ function salutationFor(companyName?: string): string {
   return "Dear Hiring Team,";
 }
 
+const CLOSING_THANK_YOU =
+  "Thank you for your consideration for this position.";
+
 export default function CoverLetter({
   profile,
   coverLetter,
@@ -78,6 +81,10 @@ export default function CoverLetter({
         ) : (
           <Text style={styles.empty}>No cover letter yet.</Text>
         )}
+
+        {paragraphs.length > 0 ? (
+          <Text style={styles.paragraph}>{CLOSING_THANK_YOU}</Text>
+        ) : null}
 
         <View style={styles.signOff}>
           <Text style={styles.closing}>Sincerely,</Text>

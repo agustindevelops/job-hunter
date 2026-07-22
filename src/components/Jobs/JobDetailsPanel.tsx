@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import type { JobReadResult } from "@/api/job";
 import { updateJob, type UpdateJobInput } from "@/api/job";
 import Button from "@/components/Button";
+import CompatibilityScoreCell from "@/components/Jobs/CompatibilityScoreCell";
 import {
   fieldClassName,
   growingTextareaClassName,
@@ -141,9 +142,12 @@ export default function JobDetailsPanel({
               <h2 className="mt-1 text-base font-semibold wrap-break-word text-zinc-900">
                 {title}
               </h2>
-              {company ? (
-                <p className="mt-0.5 text-sm text-zinc-600">{company}</p>
-              ) : null}
+              <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                {company ? (
+                  <p className="text-sm text-zinc-600">{company}</p>
+                ) : null}
+                <CompatibilityScoreCell job={job} />
+              </div>
             </>
           ) : (
             <h2 className="mt-1 text-base font-semibold text-zinc-900">

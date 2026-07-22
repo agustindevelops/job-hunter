@@ -9,18 +9,20 @@ import { createExperienceStyles } from "./styles";
 type ExperienceProps = {
   experience: ExperienceItem[];
   themeColor?: string;
+  spaced?: boolean;
 };
 
 export default function Experience({
   experience,
   themeColor,
+  spaced = true,
 }: ExperienceProps) {
   if (!experience.length) return null;
 
   const styles = createExperienceStyles(normalizeThemeColor(themeColor));
 
   return (
-    <Section title="Professional Experience">
+    <Section title="Professional Experience" spaced={spaced}>
       {experience.map((job, jobIndex) => (
         <Fragment key={jobIndex}>
           <View style={styles.itemHeader}>
@@ -41,7 +43,9 @@ export default function Experience({
               • {bullet.text}
             </Text>
           ))}
-          <View style={styles.itemSpacer} />
+          {jobIndex < experience.length - 1 ? (
+            <View style={styles.itemSpacer} />
+          ) : null}
         </Fragment>
       ))}
     </Section>

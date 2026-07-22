@@ -8,6 +8,7 @@ import { createProjectStyles } from "./styles";
 type ProjectsProps = {
   projects: Project[];
   themeColor?: string;
+  spaced?: boolean;
 };
 
 function formatProjectLinks(links: NonNullable<Project["links"]>): string {
@@ -17,13 +18,17 @@ function formatProjectLinks(links: NonNullable<Project["links"]>): string {
     .join(" · ");
 }
 
-export default function Projects({ projects, themeColor }: ProjectsProps) {
+export default function Projects({
+  projects,
+  themeColor,
+  spaced = true,
+}: ProjectsProps) {
   if (!projects.length) return null;
 
   const styles = createProjectStyles(normalizeThemeColor(themeColor));
 
   return (
-    <Section title="Projects">
+    <Section title="Projects" spaced={spaced}>
       {projects.map((project, projectIndex) => {
         const linkLine = project.links?.length
           ? formatProjectLinks(project.links)
@@ -53,7 +58,9 @@ export default function Projects({ projects, themeColor }: ProjectsProps) {
                 {project.technologies.map((t) => t.text).join(" · ")}
               </Text>
             ) : null}
-            <View style={styles.itemSpacer} />
+            {projectIndex < projects.length - 1 ? (
+              <View style={styles.itemSpacer} />
+            ) : null}
           </Fragment>
         );
       })}

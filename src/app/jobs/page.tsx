@@ -8,10 +8,18 @@ import Button from "@/components/Button";
 import ApplyJobModal from "@/components/Jobs/ApplyJobModal";
 import CompatibilityScoreCell from "@/components/Jobs/CompatibilityScoreCell";
 import DeleteJobModal from "@/components/Jobs/DeleteJobModal";
+import JobStatusSelect from "@/components/Jobs/JobStatusSelect";
 import { isAiConfigCancelledError } from "@/api/ai";
 import { listJobs } from "@/api/job";
+import type { JobApplicationStatus } from "@/api/job";
 import { useAiConfig } from "@/context/AiConfigContext";
 import { formatSalaryRange } from "@/lib/formatSalary";
+import {
+  DEFAULT_STATUS_FILTERS,
+  JOB_STATUS_OPTIONS,
+  jobStatusFilterActiveClassName,
+  toJobStatus,
+} from "@/lib/jobStatus";
 import { jobPath } from "@/lib/site";
 
 type PendingDelete = {
@@ -25,8 +33,30 @@ export default function JobsPage() {
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(
     null,
   );
+  const [statusFilters, setStatusFilters] = useState<Set<JobApplicationStatus>>(
+    () => new Set(DEFAULT_STATUS_FILTERS),
+  );
 
   const jobs = useLiveQuery(() => listJobs());
+  const filteredJobs =
+    jobs === undefined
+      ? undefined
+      : jobs.filter((job) =>
+          statusFilters.has(toJobStatus(job.applicationStatus)),
+        );
+  function toggleStatusFilter(status: JobApplicationStatus) {
+    setStatusFilters((prev) => {
+      const next = new Set(prev);
+      if (next.has(status)) {
+        // Keep at least one filter active so the table never looks "broken".
+        if (next.size === 1) return prev;
+        next.delete(status);
+      } else {
+        next.add(status);
+      }
+      return next;
+    });
+  }
 
   async function handleApplyClick() {
     try {
@@ -43,11 +73,35 @@ export default function JobsPage() {
 
       <main className="flex flex-1 flex-col p-4 sm:p-6">
         <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
-          <div className="flex items-center justify-between gap-4 border-b border-zinc-200 px-4 py-3 sm:px-5">
+          <div className="flex flex-col gap-3 border-b border-zinc-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
             <h1 className="text-base font-semibold text-zinc-900">
               Jobs Applied To
             </h1>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <div
+                className="flex flex-wrap items-center gap-1.5"
+                role="group"
+                aria-label="Filter by status"
+              >
+                {JOB_STATUS_OPTIONS.map((option) => {
+                  const active = statusFilters.has(option.value);
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => toggleStatusFilter(option.value)}
+                      className={`rounded-md border px-2 py-1 text-xs font-medium transition ${
+                        active
+                          ? jobStatusFilterActiveClassName(option.value)
+                          : "border-zinc-200 bg-white text-zinc-400 hover:border-zinc-300 hover:text-zinc-600"
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
               {config ? (
                 <Button
                   type="button"
@@ -69,6 +123,7 @@ export default function JobsPage() {
                 <tr>
                   <th className="px-4 py-3 font-medium sm:px-5">Title</th>
                   <th className="px-4 py-3 font-medium sm:px-5">Company</th>
+                  <th className="w-28 px-4 py-3 font-medium sm:px-5">Status</th>
                   <th className="px-4 py-3 font-medium sm:px-5">Location</th>
                   <th className="px-4 py-3 font-medium sm:px-5">Salary</th>
                   <th className="px-4 py-3 font-medium sm:px-5">Link</th>
@@ -79,10 +134,10 @@ export default function JobsPage() {
                 </tr>
               </thead>
               <tbody>
-                {jobs === undefined ? (
+                {jobs === undefined || filteredJobs === undefined ? (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={8}
                       className="px-4 py-10 text-center text-sm text-zinc-500 sm:px-5"
                     >
                       Loading…
@@ -91,17 +146,26 @@ export default function JobsPage() {
                 ) : jobs.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={8}
                       className="px-4 py-10 text-center text-sm text-zinc-500 sm:px-5"
                     >
                       No applications yet. Click Apply to get started.
                     </td>
                   </tr>
+                ) : filteredJobs.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={8}
+                      className="px-4 py-10 text-center text-sm text-zinc-500 sm:px-5"
+                    >
+                      No jobs match the selected status filters.
+                    </td>
+                  </tr>
                 ) : (
-                  jobs.map((job) => (
+                  filteredJobs.map((job) => (
                     <tr
                       key={job.id}
-                      className="border-b border-zinc-100 last:border-b-0"
+                      className="border-b border-zinc-200 odd:bg-white even:bg-zinc-100/80 last:border-b-0"
                     >
                       <td className="px-4 py-3 sm:px-5">
                         <Link
@@ -113,6 +177,12 @@ export default function JobsPage() {
                       </td>
                       <td className="px-4 py-3 text-zinc-600 sm:px-5">
                         {job.company?.trim() || "—"}
+                      </td>
+                      <td className="px-4 py-3 sm:px-5">
+                        <JobStatusSelect
+                          jobId={job.id!}
+                          status={job.applicationStatus}
+                        />
                       </td>
                       <td className="px-4 py-3 text-zinc-600 sm:px-5">
                         {job.location || "—"}

@@ -7,13 +7,17 @@ import { styles } from "./styles";
 
 type EducationProps = {
   education: EducationItem[];
+  spaced?: boolean;
 };
 
-export default function Education({ education }: EducationProps) {
+export default function Education({
+  education,
+  spaced = true,
+}: EducationProps) {
   if (!education.length) return null;
 
   return (
-    <Section title="Education">
+    <Section title="Education" spaced={spaced}>
       {education.map((item, itemIndex) => (
         <Fragment key={itemIndex}>
           <View style={styles.itemHeader}>
@@ -36,7 +40,9 @@ export default function Education({ education }: EducationProps) {
               • {bullet.text}
             </Text>
           ))}
-          <View style={styles.itemSpacer} />
+          {itemIndex < education.length - 1 ? (
+            <View style={styles.itemSpacer} />
+          ) : null}
         </Fragment>
       ))}
     </Section>
